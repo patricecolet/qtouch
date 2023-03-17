@@ -1,5 +1,5 @@
 // This code works only on SAMD21
-#include "Qtouch.h"
+#include "qxtouch.h"
 //#include <Control_Surface.h>
 
 //USBMIDI_Interface midi;

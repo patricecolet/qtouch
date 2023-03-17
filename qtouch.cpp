@@ -1,4 +1,4 @@
-#include "Qtouch.h"
+#include "qtouch.h"
 
 CCQtouch::CCQtouch(int pin, MIDIAddress address) {
   qt = Adafruit_FreeTouch(pin, OVERSAMPLE_4, RESISTOR_50K, FREQ_MODE_NONE);
