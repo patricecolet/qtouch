@@ -4,7 +4,7 @@
 
 //USBMIDI_Interface midi;
 
-const int buttonPin = 2;     // the number of the pushbutton pin
+//const int buttonPin = 2;     // the number of the pushbutton pin
 
 // SAMD21 Doesn't support pin PULL_UP mode,
 // so we use a resistor with one end connected to 3.3v
@@ -12,7 +12,7 @@ const int buttonPin = 2;     // the number of the pushbutton pin
 // Switch input is connected to ground.
 
 // variables will change:
-int buttonState = HIGH;         // variable for reading the pushbutton status
+//int buttonState = HIGH;         // variable for reading the pushbutton status
 
 NoteQtouch note60 {
   QT1,            // QT1 is also pin A0 of SAMD21
@@ -57,7 +57,7 @@ void setup() {
   note64.begin(); // calibrate Qtouch for note 64
   note65.begin(); // calibrate Qtouch for note 65
   note66.begin(); // calibrate Qtouch for note 66
-  pinMode(buttonPin, INPUT);
+  //pinMode(buttonPin, INPUT);
 }
 
 void loop() {
@@ -79,10 +79,11 @@ void loop() {
 
  
   // read the state of the pushbutton value:
-  buttonState = digitalRead(buttonPin);
+  //buttonState = digitalRead(buttonPin);
 
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-  if (buttonState == LOW || (midinote == 0x3c)) {
+//  if (buttonState == LOW || (midinote == 0x3c)) {
+  if (midinote == 0x3c) {
         Serial.println("calibrate");
   note60.begin(); // calibrate Qtouch for note 60
   note61.begin(); // calibrate Qtouch for note 61
