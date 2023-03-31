@@ -1,5 +1,8 @@
 // This code works only on SAMD21
+
+#include "piezo.h"
 #include "qtouch.h"
+
 //#include <Control_Surface.h>
 
 //USBMIDI_Interface midi;
@@ -49,25 +52,37 @@ NoteQtouch note66 {
    {66,0 }      // Note Number 60 on MIDI channel 1
     };
 
+unsigned long piezoTimer;
+
 void setup() {
-  note60.begin(); // calibrate Qtouch for note 60
-  note61.begin(); // calibrate Qtouch for note 61
-  note62.begin(); // calibrate Qtouch for note 62
-  note63.begin(); // calibrate Qtouch for note 63
-  note64.begin(); // calibrate Qtouch for note 64
-  note65.begin(); // calibrate Qtouch for note 65
-  note66.begin(); // calibrate Qtouch for note 66
+  qTouchBegin();
+  initPiezo();
   //pinMode(buttonPin, INPUT);
 }
-
 void loop() {
-  note60.loop(); // update note 60 sensor - pad du milieu
-  note61.loop(); // update note 60 sensor - elui par lequel le fil du 60 passe
-  note62.loop(); // update note 60 sensor
-  note63.loop(); // update note 60 sensor
-  note64.loop(); // update note 60 sensor
-  note65.loop(); // update note 60 sensor
-  note66.loop(); // update note 60 sensor
+
+  qTouchLoop();
+
+  int piezoRead = analogRead(PIEZO);
+  if(piezoRead > piezo.threshold) {
+    if(piezoRead > piezo.velocity && piezo.state == FALLING) {
+      piezo.state = RISING;
+    }
+    if(piezoRead > piezo.velocity && piezo.state == RISING) {
+      piezo.velocity = piezoRead;
+    }
+    if((piezoRead - piezo.velocity) > piezo.attackLevel && (millis() - piezoTimer) > piezo.attackTime ) {
+      if(piezo.state == RISING) {
+        piezoNoteOn(); 
+        piezo.state = FALLING;
+        piezoTimer = millis();
+        piezoNoteOff();
+      } 
+    }
+  }
+  else {
+    piezo.velocity = piezoRead;
+  }
   
   midiEventPacket_t midirx;
   // read the midi note 
@@ -77,14 +92,14 @@ void loop() {
   char midinote =  midirx.byte2;
   char midivelocity =  midirx.byte3;
 
- 
-  // read the state of the pushbutton value:
-  //buttonState = digitalRead(buttonPin);
-
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
 //  if (buttonState == LOW || (midinote == 0x3c)) {
   if (midinote == 0x3c) {
         Serial.println("calibrate");
+    qTouchBegin();
+  } 
+}
+void qTouchBegin() {
   note60.begin(); // calibrate Qtouch for note 60
   note61.begin(); // calibrate Qtouch for note 61
   note62.begin(); // calibrate Qtouch for note 62
@@ -92,5 +107,13 @@ void loop() {
   note64.begin(); // calibrate Qtouch for note 64
   note65.begin(); // calibrate Qtouch for note 65
   note66.begin(); // calibrate Qtouch for note 66
-  } 
+}
+void qTouchLoop() {
+  note60.loop(); // update note 60 sensor - pad du milieu
+  note61.loop(); // update note 60 sensor - elui par lequel le fil du 60 passe
+  note62.loop(); // update note 60 sensor
+  note63.loop(); // update note 60 sensor
+  note64.loop(); // update note 60 sensor
+  note65.loop(); // update note 60 sensor
+  note66.loop(); // update note 60 sensor
 }

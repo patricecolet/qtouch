@@ -12,8 +12,6 @@
 #define QT6 A9
 #define QT7 A10
 
-#define N 0.3
-
 /*
 #define CHANNEL_1 0
 #define CHANNEL_2 1
