@@ -31,7 +31,7 @@ void CCQtouch::sendController() {
 NoteQtouch::NoteQtouch(int pin, MIDIAddress address) {
   qt = Adafruit_FreeTouch(pin, OVERSAMPLE_64, RESISTOR_50K, FREQ_MODE_HOP);
   _address = address;
-}
+};
 void NoteQtouch::begin() {
   qt.begin();
   qt_floor = qt.measure();

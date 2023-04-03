@@ -2,6 +2,7 @@
 
 #include "piezo.h"
 #include "qtouch.h"
+#include "distance.h"
 
 //#include <Control_Surface.h>
 
@@ -55,16 +56,19 @@ NoteQtouch note66 {
 unsigned long piezoTimer;
 int prevpiezoRead;
 
+distancePB distance(0); // MIDI channel 1 is '0'
+
 void setup() {
   Serial.begin(115200);
   qTouchBegin();
   initPiezo();
+  distance.begin();
   //pinMode(buttonPin, INPUT);
 }
 
 void loop() {
   qTouchLoop();
-
+  distance.update();
   int piezoRead = analogRead(PIEZO);
   
   // switch case to update piezo.state 
