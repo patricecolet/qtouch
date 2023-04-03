@@ -53,36 +53,74 @@ NoteQtouch note66 {
     };
 
 unsigned long piezoTimer;
+int prevpiezoRead;
 
 void setup() {
+  Serial.begin(115200);
   qTouchBegin();
   initPiezo();
   //pinMode(buttonPin, INPUT);
 }
-void loop() {
 
+void loop() {
   qTouchLoop();
 
   int piezoRead = analogRead(PIEZO);
-  if(piezoRead > piezo.threshold) {
-    if(piezoRead > piezo.velocity && piezo.state == FALLING) {
-      piezo.state = RISING;
-    }
-    if(piezoRead > piezo.velocity && piezo.state == RISING) {
-      piezo.velocity = piezoRead;
-    }
-    if((piezoRead - piezo.velocity) > piezo.attackLevel && (millis() - piezoTimer) > piezo.attackTime ) {
-      if(piezo.state == RISING) {
-        piezoNoteOn(); 
+  
+  // switch case to update piezo.state 
+  switch(piezo.state) {
+    case UNDERTHRESHOLD:
+      if(piezoRead > piezo.threshold && piezoRead > prevpiezoRead)
+        piezo.state = SIGNAL;
+      break;
+    case SIGNAL:
+      if (piezoRead > prevpiezoRead)
+        piezo.state = RISING;
+      break;
+    case RISING:
+      if (piezoRead < prevpiezoRead)
+        piezo.state = PEAK;
+      break;
+    case PEAK:
+      if (piezo.prevstate == PEAK)
         piezo.state = FALLING;
-        piezoTimer = millis();
-        piezoNoteOff();
-      } 
-    }
+      break;
+    case FALLING:
+      if (piezoRead > prevpiezoRead && (millis()- piezoTimer)> piezo.debounceTime)
+        piezo.state = RISING;
+      if (piezoRead < piezo.threshold)
+        piezo.state = UNDERTHRESHOLD;
+      break;
   }
-  else {
-    piezo.velocity = piezoRead;
+  Serial.println("\n*************************************");
+  Serial.print("PIEZO: "); Serial.println(piezoRead);
+  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
+  Serial.print("PIEZO STATE: "); Serial.println(piezo.state);
+
+  // switch case for actions in each piezo.state 
+  switch(piezo.state) {
+    case UNDERTHRESHOLD:
+      break;
+    case SIGNAL:
+      piezoTimer = millis();
+      playnote(piezoRead);
+      break;
+    case RISING:
+      playnote(piezoRead);
+      break;
+    case PEAK:
+      piezoNoteOn();
+      piezoNoteOff();
+      piezo.peak = 0;
+      break;
+    case FALLING:
+      playnote(piezoRead);
+      break;
   }
+  
+  // save prevoius values in memory variables
+  prevpiezoRead = piezoRead;
+  piezo.prevstate = piezo.state;
   
   midiEventPacket_t midirx;
   // read the midi note 
@@ -93,12 +131,14 @@ void loop() {
   char midivelocity =  midirx.byte3;
 
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-//  if (buttonState == LOW || (midinote == 0x3c)) {
+  // if (buttonState == LOW || (midinote == 0x3c)) {
   if (midinote == 0x3c) {
-        Serial.println("calibrate");
+    Serial.println("calibrate");
     qTouchBegin();
   } 
+  //delay(500);
 }
+
 void qTouchBegin() {
   note60.begin(); // calibrate Qtouch for note 60
   note61.begin(); // calibrate Qtouch for note 61
