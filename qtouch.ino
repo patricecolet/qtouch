@@ -3,6 +3,7 @@
 #include "piezo.h"
 #include "qtouch.h"
 #include "distance.h"
+//#include "piezo.hpp"
 
 //#include <Control_Surface.h>
 
@@ -56,19 +57,34 @@ NoteQtouch note66 {
 unsigned long piezoTimer;
 int prevpiezoRead;
 
-distancePB distance(0); // MIDI channel 1 is '0'
-
+ distancePB Distance(0); // MIDI channel 1 is '0'
 void setup() {
   Serial.begin(115200);
   qTouchBegin();
   initPiezo();
-  distance.begin();
+    // wait until serial port opens for native USB devices
+  while (! Serial) {
+    delay(1);
+  }
+  if (!Distance.begin()) {
+    Serial.println(F("Failed to boot VL53L0X"));
+    while(1);
+  }
+
   //pinMode(buttonPin, INPUT);
 }
 
 void loop() {
+//  VL53L0X_RangingMeasurementData_t measure;
+//  Distance.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+//  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+//    if (measure.RangeMilliMeter <= 800){
+//     Serial.println(measure.RangeMilliMeter);
+//     sendPitchbend(measure.RangeMilliMeter);
+//    }
+//  }
   qTouchLoop();
-  distance.update();
+  Distance.update();
   int piezoRead = analogRead(PIEZO);
   
   // switch case to update piezo.state 
@@ -96,10 +112,10 @@ void loop() {
         piezo.state = UNDERTHRESHOLD;
       break;
   }
-  Serial.println("\n*************************************");
-  Serial.print("PIEZO: "); Serial.println(piezoRead);
-  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
-  Serial.print("PIEZO STATE: "); Serial.println(piezo.state);
+//  Serial.println("\n*************************************");
+//  Serial.print("PIEZO: "); Serial.println(piezoRead);
+//  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
+//  Serial.print("PIEZO STATE: "); Serial.println(piezo.state);
 
   // switch case for actions in each piezo.state 
   switch(piezo.state) {
@@ -140,7 +156,7 @@ void loop() {
     Serial.println("calibrate");
     qTouchBegin();
   } 
-  //delay(500);
+  //delay(50);
 }
 
 void qTouchBegin() {
@@ -160,4 +176,11 @@ void qTouchLoop() {
   note64.loop(); // update note 60 sensor
   note65.loop(); // update note 60 sensor
   note66.loop(); // update note 60 sensor
+}
+
+void sendPitchbend(int value) {
+  byte lowValue = value & 0x7F;
+  byte highValue = value >> 7;
+  midiEventPacket_t event ={0x0E, 0xE0 | 0, lowValue, highValue};
+  MidiUSB.sendMIDI(event);
 }

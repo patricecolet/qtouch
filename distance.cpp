@@ -1,12 +1,22 @@
 #include "distance.h"
 
 distancePB::distancePB(byte channel) {
-  distance = Adafruit_VL53L0X();
+  Adafruit_VL53L0X distance = Adafruit_VL53L0X();
   _channel = channel;
 };
 
-void distancePB::begin() {
-  distance.begin();
+bool distancePB::begin() {
+  
+  Serial.println("Adafruit begin");
+  if(!distance.begin()) {
+    
+  Serial.println("begin failed");
+    return 0;
+  }
+  else {
+      Serial.println("begin succeed");
+    return 1;
+  }
 };
 
 void distancePB::update() {

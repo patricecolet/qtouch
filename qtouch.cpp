@@ -43,6 +43,8 @@ void NoteQtouch::calibrate(){
 void NoteQtouch::loop() {
   //int qt_measure = (( N * qt_measure ) + qt.measure() ) / ( N + 1 );
   int qt_measure = qt.measure();
+//  Serial.print("QT 3: "); Serial.println(qt_measure);
+//  delay(50);
   int roundOff = 15;
   int range = 1014 - qt_floor + roundOff;
   velocity = 127 * (qt_measure - qt_floor + roundOff) / range;

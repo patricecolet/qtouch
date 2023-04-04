@@ -5,10 +5,10 @@
 class distancePB {
   public:
     distancePB(byte);
-    void begin();
+    bool begin();
     void update();
     void sendPitchbend();
-  private:
+//  private:
     Adafruit_VL53L0X distance;
     byte _channel;
     uint16_t pitchbend;
