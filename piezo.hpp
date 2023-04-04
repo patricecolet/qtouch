@@ -37,10 +37,11 @@ class piezo {
 		};
 		piezo(pin_t, MIDIAddress);
 		void update();
-		void playnote(int);
 		void piezoNote();
+    void playnote(int);
 	private:
 		MIDIAddress _address;
+    uint8_t velocity;
     pin_t _pin;
     unsigned long piezoTimer;
     int prevpiezoRead;

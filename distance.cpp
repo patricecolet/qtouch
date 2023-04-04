@@ -7,14 +7,14 @@ distancePB::distancePB(byte channel) {
 
 bool distancePB::begin() {
   
-  Serial.println("Adafruit begin");
+//  Serial.println("Adafruit begin");
   if(!distance.begin()) {
     
-  Serial.println("begin failed");
+//  Serial.println("begin failed");
     return 0;
   }
   else {
-      Serial.println("begin succeed");
+//      Serial.println("begin succeed");
     return 1;
   }
 };
