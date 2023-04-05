@@ -23,7 +23,7 @@ struct piezoState
 		threshold = 50;
     state = UNDERTHRESHOLD;
     prevstate = UNDERTHRESHOLD;
-		debounceTime = 80;
+		debounceTime = 100;
 		sensitivity = 1023;
 		peak = 0;
 	}
@@ -45,4 +45,5 @@ class piezo {
     pin_t _pin;
     unsigned long piezoTimer;
     int prevpiezoRead;
+    piezoState<int> Piezo;
 };

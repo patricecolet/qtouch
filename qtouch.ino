@@ -64,7 +64,7 @@ NoteQtouch note66 {
 //  distancePB Distance(0); // MIDI channel 1 is '0'
 void setup() {
   Serial.begin(115200);
-  qTouchBegin();
+//  qTouchBegin();
 //  initPiezo();
     // wait until serial port opens for native USB devices
 //  while (! Serial) {

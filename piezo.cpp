@@ -7,43 +7,32 @@ piezo::piezo(pin_t pin, MIDIAddress address) {
 
 void piezo::update() {
     int piezoRead = analogRead(_pin);
-    piezoState<int> Piezo;
-  // switch case to update piezo.state 
+  // switch case to update piezo.state
+//    Serial.print("TIMER: "); Serial.println(piezoRead);
   switch(Piezo.state) {
     case UNDERTHRESHOLD:
       if(piezoRead > Piezo.threshold && piezoRead > prevpiezoRead) {
         Piezo.state = SIGNAL;
-          Serial.println("\n*************************************");
-          Serial.print("PIEZO: "); Serial.println(Piezo.state); 
       }
       break;
-    case SIGNAL: 
-              Serial.println("\n*************************************");
-          Serial.print("PIEZO_SIGNAL: "); Serial.println(Piezo.state);   
+    case SIGNAL:   
       if (piezoRead > prevpiezoRead)
         Piezo.state = RISING;
-                  Serial.println("\n*************************************");
-          Serial.print("PIEZO_SIGNAL: "); Serial.println(Piezo.state);
       break;
       
-    case RISING: 
-                      Serial.println("\n*************************************");
-          Serial.print("PIEZO_RISING: "); Serial.println(Piezo.state);     
+    case RISING:    
       if (piezoRead < prevpiezoRead)
         Piezo.state = PEAK;
       break;
     case PEAK:
-                          Serial.println("\n*************************************");
-          Serial.print("PIEZO_RISING: "); Serial.println(Piezo.state);
       if (Piezo.prevstate == PEAK)
         Piezo.state = FALLING;
       break;
     case FALLING:
-                          Serial.println("\n*************************************");
-          Serial.print("PIEZO_RISING: "); Serial.println(Piezo.state);
+      Serial.print("TIMER: "); Serial.println(millis()- piezoTimer);   
       if (piezoRead > prevpiezoRead && (millis()- piezoTimer)> Piezo.debounceTime)
         Piezo.state = RISING;
-      if (piezoRead < Piezo.threshold)
+      if (piezoRead < Piezo.threshold && (millis()- piezoTimer)> Piezo.debounceTime)
         Piezo.state = UNDERTHRESHOLD;
       break;
   }
@@ -53,26 +42,26 @@ void piezo::update() {
 //  Serial.print("PIEZO STATE: "); Serial.println(Piezo.state);
 
   // switch case for actions in each piezo.state 
-//  switch(Piezo.state) {
-//    case UNDERTHRESHOLD:
-//      break;
-//    case SIGNAL:
-//      piezoTimer = millis();
-//      playnote(piezoRead);
-//      break;
-//    case RISING:
-//      playnote(piezoRead);
-//      break;
-//    case PEAK:
+  switch(Piezo.state) {
+    case UNDERTHRESHOLD:
+      break;
+    case SIGNAL:
+      piezoTimer = millis();
+      playnote(piezoRead);
+      break;
+    case RISING:
 //      Serial.println("\n*************************************");
-//  Serial.print("PIEZO: "); Serial.println("PEAK");
-//      piezoNote();
-//      Piezo.peak = 0;
-//      break;
-//    case FALLING:
-//      playnote(piezoRead);
-//      break;
-//  }
+//      Serial.print("TIMER: "); Serial.println(piezoTimer);
+      playnote(piezoRead);
+      break;
+    case PEAK:
+      piezoNote();
+      Piezo.peak = 0;
+      break;
+    case FALLING:
+      playnote(piezoRead);
+      break;
+  }
   
   // save prevoius values in memory variables
   prevpiezoRead = piezoRead;
