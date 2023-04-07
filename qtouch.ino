@@ -21,135 +21,137 @@
 
 NoteQtouch note60 {
   QT1,            // QT1 is also pin A0 of SAMD21
-   {60,0 }      // Note Number 60 on MIDI channel 1
-    };
+  {60, 0 }     // Note Number 60 on MIDI channel 1
+};
 
 NoteQtouch note61 {
   QT2,            // QT2 is also pin A1 of SAMD21
-   {61,0 }      // Note Number 60 on MIDI channel 1
-    };
+  {61, 0 }     // Note Number 60 on MIDI channel 1
+};
 
 NoteQtouch note62 {
   QT3,            // QT3 is also pin A6 of SAMD21
-   {62,0 }      // Note Number 60 on MIDI channel 1
-    };
+  {62, 0 }     // Note Number 60 on MIDI channel 1
+};
 
 NoteQtouch note63 {
   QT4,            // QT4 is also pin A7 of SAMD21
-   {63,0 }      // Note Number 60 on MIDI channel 1
-    };
+  {63, 0 }     // Note Number 60 on MIDI channel 1
+};
 
 NoteQtouch note64 {
   QT5,            // QT5 is also pin A8 of SAMD21
-   {64,0 }      // Note Number 60 on MIDI channel 1
-    };
+  {64, 0 }     // Note Number 60 on MIDI channel 1
+};
 
 NoteQtouch note65 {
   QT6,            // QT6 is also pin A9 of SAMD21
-   {65,0 }      // Note Number 60 on MIDI channel 1
-    };
+  {65, 0 }     // Note Number 60 on MIDI channel 1
+};
 
 NoteQtouch note66 {
   QT7,            // QT7 is also pin A10 of SAMD21
-   {66,0 }      // Note Number 60 on MIDI channel 1
-    };
+  {66, 0 }     // Note Number 60 on MIDI channel 1
+};
 
 //unsigned long piezoTimer;
 //int prevpiezoRead;
-  piezo Piezo {
+piezo Piezo {
   A3,            // Analog pin
-   {48,0 }      // Note Number 48 on MIDI channel 1
-    };
-//    
+  {48, 0 }     // Note Number 48 on MIDI channel 1
+};
+//
 //  distancePB Distance(0); // MIDI channel 1 is '0'
 void setup() {
+  disableALL();
+
   Serial.begin(115200);
-//  qTouchBegin();
-//  initPiezo();
-    // wait until serial port opens for native USB devices
-//  while (! Serial) {
-//    delay(1);
-//  }
-//  if (!Distance.begin()) {
-//    Serial.println(F("Failed to boot VL53L0X"));
-//    while(1);
-//  }
+  //  qTouchBegin();
+  //  initPiezo();
+  // wait until serial port opens for native USB devices
+  //  while (! Serial) {
+  //    delay(1);
+  //  }
+  //  if (!Distance.begin()) {
+  //    Serial.println(F("Failed to boot VL53L0X"));
+  //    while(1);
+  //  }
 
   //pinMode(buttonPin, INPUT);
 }
 
 void loop() {
-//  VL53L0X_RangingMeasurementData_t measure;
-//  Distance.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
-//  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
-//    if (measure.RangeMilliMeter <= 800){
-//     Serial.println(measure.RangeMilliMeter);
-//     sendPitchbend(measure.RangeMilliMeter);
-//    }
-//  }
+  //  VL53L0X_RangingMeasurementData_t measure;
+  //  Distance.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+  //  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+  //    if (measure.RangeMilliMeter <= 800){
+  //     Serial.println(measure.RangeMilliMeter);
+  //     sendPitchbend(measure.RangeMilliMeter);
+  //    }
+  //  }
   qTouchLoop();
-  
+
   Piezo.update();
-//  Distance.update();
-//  int piezoRead = analogRead(PIEZO);
-//  
-//  // switch case to update piezo.state 
-//  switch(piezo.state) {
-//    case UNDERTHRESHOLD:
-//      if(piezoRead > piezo.threshold && piezoRead > prevpiezoRead)
-//        piezo.state = SIGNAL;
-//      break;
-//    case SIGNAL:
-//      if (piezoRead > prevpiezoRead)
-//        piezo.state = RISING;
-//      break;
-//    case RISING:
-//      if (piezoRead < prevpiezoRead)
-//        piezo.state = PEAK;
-//      break;
-//    case PEAK:
-//      if (piezo.prevstate == PEAK)
-//        piezo.state = FALLING;
-//      break;
-//    case FALLING:
-//      if (piezoRead > prevpiezoRead && (millis()- piezoTimer)> piezo.debounceTime)
-//        piezo.state = RISING;
-//      if (piezoRead < piezo.threshold)
-//        piezo.state = UNDERTHRESHOLD;
-//      break;
-//  }
-////  Serial.println("\n*************************************");
-////  Serial.print("PIEZO: "); Serial.println(piezoRead);
-////  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
-////  Serial.print("PIEZO STATE: "); Serial.println(piezo.state);
-//
-//  // switch case for actions in each piezo.state 
-//  switch(piezo.state) {
-//    case UNDERTHRESHOLD:
-//      break;
-//    case SIGNAL:
-//      piezoTimer = millis();
-//      playnote(piezoRead);
-//      break;
-//    case RISING:
-//      playnote(piezoRead);
-//      break;
-//    case PEAK:
-//      piezoNoteOn();
-//      piezoNoteOff();
-//      piezo.peak = 0;
-//      break;
-//    case FALLING:
-//      playnote(piezoRead);
-//      break;
-//  }
-//  
-//  // save prevoius values in memory variables
-//  prevpiezoRead = piezoRead;
-//  piezo.prevstate = piezo.state;
-//  
+  //  Distance.update();
+  //  int piezoRead = analogRead(PIEZO);
+  //
+  //  // switch case to update piezo.state
+  //  switch(piezo.state) {
+  //    case UNDERTHRESHOLD:
+  //      if(piezoRead > piezo.threshold && piezoRead > prevpiezoRead)
+  //        piezo.state = SIGNAL;
+  //      break;
+  //    case SIGNAL:
+  //      if (piezoRead > prevpiezoRead)
+  //        piezo.state = RISING;
+  //      break;
+  //    case RISING:
+  //      if (piezoRead < prevpiezoRead)
+  //        piezo.state = PEAK;
+  //      break;
+  //    case PEAK:
+  //      if (piezo.prevstate == PEAK)
+  //        piezo.state = FALLING;
+  //      break;
+  //    case FALLING:
+  //      if (piezoRead > prevpiezoRead && (millis()- piezoTimer)> piezo.debounceTime)
+  //        piezo.state = RISING;
+  //      if (piezoRead < piezo.threshold)
+  //        piezo.state = UNDERTHRESHOLD;
+  //      break;
+  //  }
+  ////  Serial.println("\n*************************************");
+  ////  Serial.print("PIEZO: "); Serial.println(piezoRead);
+  ////  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
+  ////  Serial.print("PIEZO STATE: "); Serial.println(piezo.state);
+  //
+  //  // switch case for actions in each piezo.state
+  //  switch(piezo.state) {
+  //    case UNDERTHRESHOLD:
+  //      break;
+  //    case SIGNAL:
+  //      piezoTimer = millis();
+  //      playnote(piezoRead);
+  //      break;
+  //    case RISING:
+  //      playnote(piezoRead);
+  //      break;
+  //    case PEAK:
+  //      piezoNoteOn();
+  //      piezoNoteOff();
+  //      piezo.peak = 0;
+  //      break;
+  //    case FALLING:
+  //      playnote(piezoRead);
+  //      break;
+  //  }
+  //
+  //  // save prevoius values in memory variables
+  //  prevpiezoRead = piezoRead;
+  //  piezo.prevstate = piezo.state;
+  //
   midiEventPacket_t midirx;
-  // read the midi note 
+  // read the midi note
   midirx = MidiUSB.read();
   char midiheader = midirx.header;
   char midibyte1 = midirx.byte1;
@@ -161,7 +163,7 @@ void loop() {
   if (midinote == 0x3c) {
     Serial.println("calibrate");
     qTouchBegin();
-  } 
+  }
   //delay(50);
 }
 
@@ -183,7 +185,28 @@ void qTouchLoop() {
   note65.loop(); // update note 60 sensor
   note66.loop(); // update note 60 sensor
 }
-
+void disableALL() {
+  pinMode(0, OUTPUT);
+  pinMode(1, OUTPUT);
+  pinMode(2, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);
+  digitalWrite(0, LOW);
+  digitalWrite(1, LOW);
+  digitalWrite(2, LOW);
+  digitalWrite(4, LOW);
+  digitalWrite(5, LOW);
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+  digitalWrite(9, LOW);
+  digitalWrite(10, LOW);
+}
 //void sendPitchbend(int value) {
 //  byte lowValue = value & 0x7F;
 //  byte highValue = value >> 7;

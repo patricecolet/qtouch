@@ -28,19 +28,16 @@ void piezo::update() {
       if (Piezo.prevstate == PEAK)
         Piezo.state = FALLING;
       break;
-    case FALLING:
-      Serial.print("TIMER: "); Serial.println(millis()- piezoTimer);   
-      if (piezoRead > prevpiezoRead && (millis()- piezoTimer)> Piezo.debounceTime)
-        Piezo.state = RISING;
+    case FALLING:  
       if (piezoRead < Piezo.threshold && (millis()- piezoTimer)> Piezo.debounceTime)
         Piezo.state = UNDERTHRESHOLD;
       break;
   }
 //  Serial.println("\n*************************************");
-//  Serial.print("PIEZO: "); Serial.println(piezoRead);
+  Serial.print("PIEZO: "); Serial.println(piezoRead);
 //  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
 //  Serial.print("PIEZO STATE: "); Serial.println(Piezo.state);
-
+delay(1);
   // switch case for actions in each piezo.state 
   switch(Piezo.state) {
     case UNDERTHRESHOLD:
@@ -78,9 +75,7 @@ void piezo::playnote(int piezoRead) {
 }
 
 
-void piezo::piezoNote() {
-  Serial.println("\n*************************************");
-  Serial.print("PIEZO: "); Serial.println(velocity);  
+void piezo::piezoNote() { 
       midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, _address.address, velocity};
       MidiUSB.sendMIDI(noteOn);
       midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, _address.address, 0};
