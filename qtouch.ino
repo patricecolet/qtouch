@@ -20,54 +20,46 @@
 //int buttonState = HIGH;         // variable for reading the pushbutton status
 
 NoteQtouch tableauQtouch[] = {
-
-NoteQtouch {
-  QT1,            // QT1 is also pin A0 of SAMD21
-  {60, 0 }     // Note Number 60 on MIDI channel 1
-},
-
-NoteQtouch {
-  QT2,            // QT2 is also pin A1 of SAMD21
-  {61, 0 }     // Note Number 60 on MIDI channel 1
-},
-
-NoteQtouch {
-  QT3,            // QT3 is also pin A6 of SAMD21
-  {62, 0 }     // Note Number 60 on MIDI channel 1
-},
-
-NoteQtouch {
-  QT4,            // QT4 is also pin A7 of SAMD21
-  {63, 0 }     // Note Number 60 on MIDI channel 1
-},
-
-NoteQtouch {
-  QT5,            // QT5 is also pin A8 of SAMD21
-  {64, 0 }     // Note Number 60 on MIDI channel 1
-},
-
-NoteQtouch {
-  QT6,            // QT6 is also pin A9 of SAMD21
-  {65, 0 }     // Note Number 60 on MIDI channel 1
-},
-
-NoteQtouch{
-  QT7,            // QT7 is also pin A10 of SAMD21
-  {66, 0 }     // Note Number 60 on MIDI channel 1
-}
+  NoteQtouch {
+    QT1,            // QT1 is also pin A0 of SAMD21
+    {60, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT2,            // QT2 is also pin A1 of SAMD21
+    {61, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT3,            // QT3 is also pin A6 of SAMD21
+    {62, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT4,            // QT4 is also pin A7 of SAMD21
+    {63, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT5,            // QT5 is also pin A8 of SAMD21
+    {64, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT6,            // QT6 is also pin A9 of SAMD21
+    {65, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch{
+    QT7,            // QT7 is also pin A10 of SAMD21
+    {66, 0 }     // Note Number 60 on MIDI channel 1
+  }
 };
 
-//unsigned long piezoTimer;
-//int prevpiezoRead;
+// piezo disk connected on analog A3
 piezo Piezo {
   A3,            // Analog pin
   {48, 0 }     // Note Number 48 on MIDI channel 1
 };
-//
-  distancePB Distance(0); // MIDI channel 1 is '0'
-void setup() {
-  disableALL();
 
+// distance sensor uses Adafruit_VL53L0X library
+distancePB Distance(0); // MIDI channel 1 is '0'
+
+void setup() {
   Serial.begin(115200);
     qTouchBegin();
  //  wait until serial port opens for native USB devices
@@ -85,7 +77,6 @@ void setup() {
 void loop() {
   Distance.update();
   qTouchLoop();
- // qTouchGetState();
   if (tableauQtouch[0].getState() == 1) 
     Serial.println(tableauQtouch[0].getState());
 
@@ -120,27 +111,6 @@ void qTouchLoop() {
   }
 }
 
-/*
-void qTouchGetState(){
-  
-  Serial.print('note60'); Serial.println(note60.getState());
-  Serial.print('note61'); Serial.println(note61.getState());
-  Serial.print('note62'); Serial.println(note62.getState());
-  Serial.print('note63'); Serial.println(note63.getState());
-  Serial.print('note64'); Serial.println(note64.getState());
-  Serial.print('note65'); Serial.println(note65.getState());
-  Serial.print('note66'); Serial.println(note66.getState());
-
-  bool state60 = note60.getState();
-  bool state61 = note61.getState();
-  bool state62 = note62.getState();
-  bool state63 = note63.getState();
-  bool state64 = note64.getState();
-  bool state65 = note65.getState();
-  bool state66 = note66.getState();
-}
-*/
-
 void disableALL() {
   pinMode(0, OUTPUT);
   pinMode(1, OUTPUT);
@@ -163,9 +133,4 @@ void disableALL() {
   digitalWrite(9, LOW);
   digitalWrite(10, LOW);
 }
-//void sendPitchbend(int value) {
-//  byte lowValue = value & 0x7F;
-//  byte highValue = value >> 7;
-//  midiEventPacket_t event ={0x0E, 0xE0 | 0, lowValue, highValue};
-//  MidiUSB.sendMIDI(event);
-//}
+
