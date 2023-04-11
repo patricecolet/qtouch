@@ -2,7 +2,7 @@
 
 //#include "piezo.h"
 #include "qtouch.h"
-//#include "distance.h"
+#include "distance.h"
 #include "piezo.hpp"
 
 //#include <Control_Surface.h>
