@@ -34,7 +34,7 @@ void piezo::update() {
       break;
   }
 //  Serial.println("\n*************************************");
-  Serial.print("PIEZO: "); Serial.println(piezoRead);
+//  Serial.print("PIEZO: "); Serial.println(piezoRead);
 //  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
 //  Serial.print("PIEZO STATE: "); Serial.println(Piezo.state);
 delay(1);
