@@ -64,34 +64,26 @@ piezo Piezo {
   {48, 0 }     // Note Number 48 on MIDI channel 1
 };
 //
-//  distancePB Distance(0); // MIDI channel 1 is '0'
+  distancePB Distance(0); // MIDI channel 1 is '0'
 void setup() {
   disableALL();
 
   Serial.begin(115200);
     qTouchBegin();
-  //  initPiezo();
-  // wait until serial port opens for native USB devices
-  //  while (! Serial) {
-  //    delay(1);
-  //  }
-  //  if (!Distance.begin()) {
-  //    Serial.println(F("Failed to boot VL53L0X"));
-  //    while(1);
-  //  }
+ //  wait until serial port opens for native USB devices
+    while (! Serial) {
+      delay(1);
+    }
+    if (!Distance.begin()) {
+      Serial.println(F("Failed to boot VL53L0X"));
+      while(1);
+    }
 
   //pinMode(buttonPin, INPUT);
 }
 
 void loop() {
-  //  VL53L0X_RangingMeasurementData_t measure;
-  //  Distance.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
-  //  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
-  //    if (measure.RangeMilliMeter <= 800){
-  //     Serial.println(measure.RangeMilliMeter);
-  //     sendPitchbend(measure.RangeMilliMeter);
-  //    }
-  //  }
+  Distance.update();
   qTouchLoop();
  // qTouchGetState();
   if (tableauQtouch[0].getState() == 1) 

@@ -1,5 +1,5 @@
 #include "distance.h"
-
+#define RANGE_MM 800
 distancePB::distancePB(byte channel) {
   Adafruit_VL53L0X distance = Adafruit_VL53L0X();
   _channel = channel;
@@ -22,7 +22,9 @@ bool distancePB::begin() {
 void distancePB::update() {
   distance.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
   pitchbend = measure.RangeMilliMeter;
-  if (measure.RangeStatus != 4) sendPitchbend();
+  if (measure.RangeStatus != 4) {
+    if (measure.RangeMilliMeter <= RANGE_MM) sendPitchbend();
+  }
 };
   
 void distancePB::sendPitchbend() {
