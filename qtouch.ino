@@ -58,27 +58,32 @@ piezo Piezo {
 
 // distance sensor uses Adafruit_VL53L0X library
 distancePB Distance(0); // MIDI channel 1 is '0'
-
+long distanceTimer;
 void setup() {
+  distanceTimer = millis();
   Serial.begin(115200);
     qTouchBegin();
- //  wait until serial port opens for native USB devices
-    while (! Serial) {
-      delay(1);
-    }
-    if (!Distance.begin()) {
-      Serial.println(F("Failed to boot VL53L0X"));
-      while(1);
-    }
-
+//   wait until serial port opens for native USB devices
+//    while (! Serial) {
+//      delay(1);
+//    }
+//    if (!Distance.begin()) {
+//      Serial.println(F("Failed to boot VL53L0X"));
+//      while(1);
+//    }
+Distance.begin();
   //pinMode(buttonPin, INPUT);
 }
 
 void loop() {
-  Distance.update();
+  if (millis() - distanceTimer > 100) {
+    distanceTimer = millis();
+    Distance.update();
+  }
+  
   qTouchLoop();
-  if (tableauQtouch[0].getState() == 1) 
-    Serial.println(tableauQtouch[0].getState());
+//  if (tableauQtouch[0].getState() == 1) 
+//    Serial.println(tableauQtouch[0].getState());
 
   Piezo.update();
 
@@ -133,4 +138,3 @@ void disableALL() {
   digitalWrite(9, LOW);
   digitalWrite(10, LOW);
 }
-

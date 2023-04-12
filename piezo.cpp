@@ -37,7 +37,7 @@ void piezo::update() {
 //  Serial.print("PIEZO: "); Serial.println(piezoRead);
 //  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
 //  Serial.print("PIEZO STATE: "); Serial.println(Piezo.state);
-delay(1);
+// delay(1);
   // switch case for actions in each piezo.state 
   switch(Piezo.state) {
     case UNDERTHRESHOLD:
