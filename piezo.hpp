@@ -1,3 +1,8 @@
+//Use interrupt to optimize analogRead
+//#include "Adafruit_ZeroTimer.h"
+//#define COMPARE 48000
+
+
 #include "MIDIUSB.h"
 #define UNDERTHRESHOLD 0
 #define SIGNAL 1
@@ -20,10 +25,10 @@ struct piezoState
 	T peak;
 	piezoState()
 	{
-		threshold = 50;
+		threshold = 35;
     state = UNDERTHRESHOLD;
     prevstate = UNDERTHRESHOLD;
-		debounceTime = 100;
+		debounceTime = 25;
 		sensitivity = 1023;
 		peak = 0;
 	}
@@ -36,10 +41,11 @@ class piezo {
 			uint8_t channel : 4;
 		};
 		piezo(pin_t, MIDIAddress);
-		void update();
+		void update(int);
 		void piezoNote();
     void playnote(int);
 	private:
+    //Adafruit_ZeroTimer zerotimer;
 		MIDIAddress _address;
     uint8_t velocity;
     pin_t _pin;

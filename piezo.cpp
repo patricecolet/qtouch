@@ -1,12 +1,14 @@
 #include "piezo.hpp"
 
 piezo::piezo(pin_t pin, MIDIAddress address) {
+     //zerotimer = Adafruit_ZeroTimer(timer);
     _address = address;
     _pin = pin;  
 };
 
-void piezo::update() {
+void piezo::update(int piezoread) {
     int piezoRead = analogRead(_pin);
+    //int piezoRead = piezoread;
   // switch case to update piezo.state
 //    Serial.print("TIMER: "); Serial.println(piezoRead);
   switch(Piezo.state) {
@@ -38,6 +40,7 @@ void piezo::update() {
 //  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
 //  Serial.print("PIEZO STATE: "); Serial.println(Piezo.state);
 // delay(1);
+
   // switch case for actions in each piezo.state 
   switch(Piezo.state) {
     case UNDERTHRESHOLD:
@@ -56,7 +59,6 @@ void piezo::update() {
       Piezo.peak = 0;
       break;
     case FALLING:
-      playnote(piezoRead);
       break;
   }
   
@@ -68,7 +70,6 @@ void piezo::update() {
 
 
 void piezo::playnote(int piezoRead) {
-  piezoState<int> Piezo;
   velocity = 127 * piezoRead / (Piezo.sensitivity - Piezo.threshold);
   if (velocity > 127) velocity = 127;
   if (velocity > Piezo.peak) Piezo.peak = velocity;
@@ -76,7 +77,7 @@ void piezo::playnote(int piezoRead) {
 
 
 void piezo::piezoNote() { 
-      midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, _address.address, velocity};
+      midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, _address.address, Piezo.peak};
       MidiUSB.sendMIDI(noteOn);
       midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, _address.address, 0};
       MidiUSB.sendMIDI(noteOff);

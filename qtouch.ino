@@ -1,16 +1,18 @@
 // This code works only on SAMD21
 
+//Use interrupt to optimize analogRead
+#include "Adafruit_ZeroTimer.h"
+int COMPARE = 48000/2;
+
 //#include "piezo.h"
 #include "qtouch.h"
 #include "distance.h"
 #include "piezo.hpp"
 
 //#include <Control_Surface.h>
-
 //USBMIDI_Interface midi;
 
 //const int buttonPin = 2;     // the number of the pushbutton pin
-
 // SAMD21 Doesn't support pin PULL_UP mode,
 // so we use a resistor with one end connected to 3.3v
 // and the other end connected to Digital input and switch output.
@@ -54,15 +56,28 @@ NoteQtouch tableauQtouch[] = {
 piezo Piezo {
   A3,            // Analog pin
   {48, 0 }     // Note Number 48 on MIDI channel 1
-};
+//  3
+ };
+//global variable for piezo
+int piezoread = 0; 
+
+// timer to prioritize piezo
+Adafruit_ZeroTimer zerotimer = Adafruit_ZeroTimer(3);
+
+void TC3_Handler() {
+  Adafruit_ZeroTimer::timerHandler(3);
+}
 
 // distance sensor uses Adafruit_VL53L0X library
 distancePB Distance(0); // MIDI channel 1 is '0'
 long distanceTimer;
+
 void setup() {
   distanceTimer = millis();
   Serial.begin(115200);
-    qTouchBegin();
+  qTouchBegin();
+  timerBegin();
+  Distance.begin();
 //   wait until serial port opens for native USB devices
 //    while (! Serial) {
 //      delay(1);
@@ -71,8 +86,7 @@ void setup() {
 //      Serial.println(F("Failed to boot VL53L0X"));
 //      while(1);
 //    }
-Distance.begin();
-  //pinMode(buttonPin, INPUT);
+//pinMode(buttonPin, INPUT);
 }
 
 void loop() {
@@ -85,7 +99,7 @@ void loop() {
 //  if (tableauQtouch[0].getState() == 1) 
 //    Serial.println(tableauQtouch[0].getState());
 
-  Piezo.update();
+  //Piezo.update(piezoread);
 
   midiEventPacket_t midirx;
   // read the midi note
@@ -104,6 +118,8 @@ void loop() {
  // delay(20);
 }
 
+
+
 void qTouchBegin() {
   for (int i = 0; i < 7; i ++){
   tableauQtouch[i].begin();   
@@ -114,6 +130,28 @@ void qTouchLoop() {
   for (int i = 0; i < 7; i ++){
   tableauQtouch[i].loop();   
   }
+}
+
+// the timer callback
+void TimerCallback0(void)
+{
+ piezoread = analogRead(A3);
+ //Serial.println(piezoread);
+ Piezo.update(piezoread);
+}
+
+void timerBegin(){ 
+  tc_clock_prescaler prescaler = TC_CLOCK_PRESCALER_DIV1;
+
+  zerotimer.enable(false);
+  zerotimer.configure(prescaler,       // prescaler
+          TC_COUNTER_SIZE_16BIT,       // bit width of timer/counter
+          TC_WAVE_GENERATION_MATCH_PWM // frequency or PWM mode
+          );
+
+  zerotimer.setCompare(0, COMPARE);
+  zerotimer.setCallback(true, TC_CALLBACK_CC_CHANNEL0, TimerCallback0);
+  zerotimer.enable(true);
 }
 
 void disableALL() {

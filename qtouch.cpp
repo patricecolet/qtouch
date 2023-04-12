@@ -18,7 +18,8 @@ void CCQtouch::calibrate(){
 void CCQtouch::loop() {
   //int qt_measure = (( N * qt_measure ) + qt.measure() ) / ( N + 1 );
   int qt_measure = qt.measure();
-  int roundOff = 30;
+  // set roundoff at instantiation
+  int roundOff = 10;
   int range = 1014 - qt_floor + roundOff;
   CCvalue = 127 * (qt_measure - qt_floor + roundOff) / range;
   if(qt_measure > qt_floor + roundOff) {
@@ -40,7 +41,7 @@ NoteQtouch::NoteQtouch(int pin, MIDIAddress address) {
 void NoteQtouch::begin() {
   qt.begin();
   qt_floor = qt.measure();
-  hysteresis.set(10);
+//  hysteresis.set(10);
   //calibrate();
 };
 
@@ -92,6 +93,10 @@ void NoteQtouch::sendNoteOff() {
 };
 
 void NoteQtouch::sendAfterTouch() {
-      midiEventPacket_t event = {0x0A, 0xA0 | _address.channel, _address.address, velocity};
+      uint8_t afterTouch = velocity * 3;
+      if (afterTouch > 127) afterTouch = 127;
+//      Serial.print("velo:");Serial.println(velocity);
+//      Serial.print("after:");Serial.println(afterTouch);
+      midiEventPacket_t event = {0x0A, 0xA0 | _address.channel, _address.address, afterTouch};
       MidiUSB.sendMIDI(event);
 };
