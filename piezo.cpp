@@ -1,27 +1,28 @@
 #include "piezo.hpp"
+//global variable for piezo's velocity
+//uint8_t velopiezo = 0;
 
 piezo::piezo(pin_t pin, MIDIAddress address) {
      //zerotimer = Adafruit_ZeroTimer(timer);
     _address = address;
     _pin = pin;  
+    SendVelo = 0;
 };
 
-void piezo::update(int piezoread) {
-    int piezoRead = analogRead(_pin);
-    //int piezoRead = piezoread;
+int piezo::update() {
+  int piezoRead = analogRead(_pin);
+  //int piezoRead = piezoread;
+  //Serial.print("TIMER: "); Serial.println(piezoRead);
   // switch case to update piezo.state
-//    Serial.print("TIMER: "); Serial.println(piezoRead);
   switch(Piezo.state) {
     case UNDERTHRESHOLD:
-      if(piezoRead > Piezo.threshold && piezoRead > prevpiezoRead) {
+      if(piezoRead > Piezo.threshold && piezoRead > prevpiezoRead)
         Piezo.state = SIGNAL;
-      }
       break;
     case SIGNAL:   
       if (piezoRead > prevpiezoRead)
         Piezo.state = RISING;
       break;
-      
     case RISING:    
       if (piezoRead < prevpiezoRead)
         Piezo.state = PEAK;
@@ -55,26 +56,29 @@ void piezo::update(int piezoread) {
       playnote(piezoRead);
       break;
     case PEAK:
-      piezoNote();
+      //piezoNote();
+      //velopiezo = Piezo.peak;
+      //Serial.print("Velocity piezo SWITCH : "); Serial.println(Send);
+      SendVelo = Piezo.peak;
       Piezo.peak = 0;
       break;
     case FALLING:
+      //velopiezo = 0;
+      SendVelo = 0;
       break;
   }
   
   // save prevoius values in memory variables
   prevpiezoRead = piezoRead;
   Piezo.prevstate = Piezo.state;
-  
+  return SendVelo;
 }
-
 
 void piezo::playnote(int piezoRead) {
   velocity = 127 * piezoRead / (Piezo.sensitivity - Piezo.threshold);
   if (velocity > 127) velocity = 127;
   if (velocity > Piezo.peak) Piezo.peak = velocity;
 }
-
 
 void piezo::piezoNote() { 
       midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, _address.address, Piezo.peak};

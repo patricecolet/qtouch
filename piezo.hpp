@@ -2,7 +2,6 @@
 //#include "Adafruit_ZeroTimer.h"
 //#define COMPARE 48000
 
-
 #include "MIDIUSB.h"
 #define UNDERTHRESHOLD 0
 #define SIGNAL 1
@@ -13,6 +12,8 @@
 
 #include <iostream>
 using namespace std;
+
+//extern uint8_t velopiezo;
 
 template<typename T> 
 struct piezoState 
@@ -41,7 +42,7 @@ class piezo {
 			uint8_t channel : 4;
 		};
 		piezo(pin_t, MIDIAddress);
-		void update(int);
+		int update();
 		void piezoNote();
     void playnote(int);
 	private:
@@ -51,5 +52,6 @@ class piezo {
     pin_t _pin;
     unsigned long piezoTimer;
     int prevpiezoRead;
+    int SendVelo;
     piezoState<int> Piezo;
 };

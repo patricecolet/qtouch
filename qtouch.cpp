@@ -35,7 +35,7 @@ void CCQtouch::sendController() {
 NoteQtouch::NoteQtouch(int pin, MIDIAddress address) {
   qt = Adafruit_FreeTouch(pin, OVERSAMPLE_64, RESISTOR_50K, FREQ_MODE_HOP);
   _address = address;
-  Hysteresis <uint8_t> hysteresis(10);
+  //Hysteresis <uint8_t> hysteresis(10);
 };
 
 void NoteQtouch::begin() {
@@ -50,6 +50,7 @@ void NoteQtouch::calibrate(){
 };
 
 void NoteQtouch::loop() {
+  //velopiezo = (uint8_t)(velo);
   //int qt_measure = (( N * qt_measure ) + qt.measure() ) / ( N + 1 );
   int qt_measure = qt.measure();
 //  Serial.print("QT 3: "); Serial.println(qt_measure);
@@ -59,7 +60,8 @@ void NoteQtouch::loop() {
   velocity = 127 * (qt_measure - qt_floor + roundOff) / range;
   if((qt_measure > qt_floor + roundOff) && qt_memory == 0) {
     qt_memory = qt_measure;
-    sendNoteOn();
+    //sendNoteOn();
+    //Serial.println("note");
     setState(1);
   };
   if((qt_measure < (qt_floor + roundOff)) && qt_memory != 0) {
@@ -82,8 +84,18 @@ bool NoteQtouch::getState() {
      return state;
 };
 
-void NoteQtouch::sendNoteOn() {
-      midiEventPacket_t event = {0x09, 0x90 | _address.channel, _address.address, velocity};
+/*
+void NoteQtouch::setVelocity(int velo) {
+     velopiezo = uint8_t (velo);
+     //Serial.println(velopiezo);
+};
+*/
+
+void NoteQtouch::sendNoteOn(int velo) {
+      velopiezo = (uint8_t)(velo);
+      //midiEventPacket_t event = {0x09, 0x90 | _address.channel, _address.address, velocity};
+      midiEventPacket_t event = {0x09, 0x90 | _address.channel, _address.address, velopiezo};
+      Serial.println(velopiezo);
       MidiUSB.sendMIDI(event);
 };
 

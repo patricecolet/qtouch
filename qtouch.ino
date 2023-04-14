@@ -8,6 +8,7 @@ int COMPARE = 48000/2;
 #include "qtouch.h"
 #include "distance.h"
 #include "piezo.hpp"
+#include <FlashStorage.h>
 
 //#include <Control_Surface.h>
 //USBMIDI_Interface midi;
@@ -59,11 +60,11 @@ piezo Piezo {
 //  3
  };
 //global variable for piezo
-int piezoread = 0; 
+int qtouchActif = 0;
+int veloPiezo = 0;  // variable for the piezo's velocity 
 
 // timer to prioritize piezo
 Adafruit_ZeroTimer zerotimer = Adafruit_ZeroTimer(3);
-
 void TC3_Handler() {
   Adafruit_ZeroTimer::timerHandler(3);
 }
@@ -72,12 +73,17 @@ void TC3_Handler() {
 distancePB Distance(0); // MIDI channel 1 is '0'
 long distanceTimer;
 
+// flash storage to stock the piezo's velocity
+FlashStorage(my_flash_store, int);
+
 void setup() {
   distanceTimer = millis();
   Serial.begin(115200);
   qTouchBegin();
   timerBegin();
   Distance.begin();
+  my_flash_store.write(qtouchActif);
+
 //   wait until serial port opens for native USB devices
 //    while (! Serial) {
 //      delay(1);
@@ -94,12 +100,9 @@ void loop() {
     distanceTimer = millis();
     Distance.update();
   }
-  
-  qTouchLoop();
+//  qTouchLoop();
 //  if (tableauQtouch[0].getState() == 1) 
 //    Serial.println(tableauQtouch[0].getState());
-
-  //Piezo.update(piezoread);
 
   midiEventPacket_t midirx;
   // read the midi note
@@ -128,16 +131,27 @@ void qTouchBegin() {
 
 void qTouchLoop() {
   for (int i = 0; i < 7; i ++){
-  tableauQtouch[i].loop();   
+  tableauQtouch[i].loop(); 
+  if (tableauQtouch[i].getState() == 1) 
+    my_flash_store.write(i+1);
   }
 }
 
 // the timer callback
-void TimerCallback0(void)
-{
- piezoread = analogRead(A3);
- //Serial.println(piezoread);
- Piezo.update(piezoread);
+void TimerCallback0(void){
+  //piezoread = analogRead(A3);
+  //Serial.println(piezoread);
+  qTouchLoop();
+  veloPiezo = Piezo.update();
+  qtouchActif = my_flash_store.read()-1;
+  if (veloPiezo != 0 && qtouchActif != 0){
+    Serial.print("QTOUCH : ");Serial.println(qtouchActif);
+    tableauQtouch[qtouchActif].sendNoteOn(veloPiezo);
+  }
+  //Serial.println(veloPiezo);
+  // for (int i = 0; i < 7; i ++){
+  //  tableauQtouch[i].setVelocity(veloPiezo);   
+  // }
 }
 
 void timerBegin(){ 
