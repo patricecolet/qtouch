@@ -42,8 +42,8 @@ class piezo {
 			uint8_t channel : 4;
 		};
 		piezo(pin_t, MIDIAddress);
-		int update();
-		void piezoNote();
+		void update(uint8_t);
+		void piezoNote(uint8_t);
     void playnote(int);
 	private:
     //Adafruit_ZeroTimer zerotimer;
@@ -52,6 +52,6 @@ class piezo {
     pin_t _pin;
     unsigned long piezoTimer;
     int prevpiezoRead;
-    int SendVelo;
+    //int SendVelo;
     piezoState<int> Piezo;
 };

@@ -60,8 +60,8 @@ piezo Piezo {
 //  3
  };
 //global variable for piezo
-int qtouchActif = 0;
-int veloPiezo = 0;  // variable for the piezo's velocity 
+uint8_t qtouchActif = 0;
+//int veloPiezo = 0;  // variable for the piezo's velocity 
 
 // timer to prioritize piezo
 Adafruit_ZeroTimer zerotimer = Adafruit_ZeroTimer(3);
@@ -96,13 +96,14 @@ void setup() {
 }
 
 void loop() {
+  qTouchLoop();
+//  if (tableauQtouch[0].getState() == 1) 
+//    Serial.println(tableauQtouch[0].getState());
+
   if (millis() - distanceTimer > 100) {
     distanceTimer = millis();
     Distance.update();
   }
-//  qTouchLoop();
-//  if (tableauQtouch[0].getState() == 1) 
-//    Serial.println(tableauQtouch[0].getState());
 
   midiEventPacket_t midirx;
   // read the midi note
@@ -130,39 +131,39 @@ void qTouchBegin() {
 }
 
 void qTouchLoop() {
+  int Nqt = 0;  // number of non-actif qtouch zones
+  uint8_t note = 0;
   for (int i = 0; i < 7; i ++){
-  tableauQtouch[i].loop(); 
-  if (tableauQtouch[i].getState() == 1) 
-    my_flash_store.write(i+1);
+    tableauQtouch[i].loop(); 
+    if (tableauQtouch[i].getState() == 1){
+      note = 60+i;
+      my_flash_store.write(note);
+    }
+    else
+      Nqt = Nqt+1;
   }
+  if (Nqt == 7)
+    note = 0;
+    my_flash_store.write(note);
 }
 
-// the timer callback
+// the timer callback function
 void TimerCallback0(void){
   //piezoread = analogRead(A3);
   //Serial.println(piezoread);
-  qTouchLoop();
-  veloPiezo = Piezo.update();
-  qtouchActif = my_flash_store.read()-1;
-  if (veloPiezo != 0 && qtouchActif != 0){
-    Serial.print("QTOUCH : ");Serial.println(qtouchActif);
-    tableauQtouch[qtouchActif].sendNoteOn(veloPiezo);
-  }
-  //Serial.println(veloPiezo);
-  // for (int i = 0; i < 7; i ++){
-  //  tableauQtouch[i].setVelocity(veloPiezo);   
-  // }
+  //qTouchLoop();
+  qtouchActif = my_flash_store.read();
+  Serial.print("Note qtouch Actif : "); Serial.println(qtouchActif);
+  Piezo.update(qtouchActif);
 }
 
 void timerBegin(){ 
   tc_clock_prescaler prescaler = TC_CLOCK_PRESCALER_DIV1;
-
   zerotimer.enable(false);
   zerotimer.configure(prescaler,       // prescaler
           TC_COUNTER_SIZE_16BIT,       // bit width of timer/counter
           TC_WAVE_GENERATION_MATCH_PWM // frequency or PWM mode
           );
-
   zerotimer.setCompare(0, COMPARE);
   zerotimer.setCallback(true, TC_CALLBACK_CC_CHANNEL0, TimerCallback0);
   zerotimer.enable(true);
