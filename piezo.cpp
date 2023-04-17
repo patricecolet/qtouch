@@ -8,8 +8,8 @@ piezo::piezo(pin_t pin, MIDIAddress address) {
     _pin = pin;  
     //SendVelo = 0;
 };
-
-void piezo::update(uint8_t memoNote) {
+void piezo::update() {
+//void piezo::update(uint8_t memoNote) {
   int piezoRead = analogRead(_pin);
   //int piezoRead = piezoread;
   //Serial.print("TIMER: "); Serial.println(piezoRead);
@@ -57,10 +57,14 @@ void piezo::update(uint8_t memoNote) {
       //velopiezo = Piezo.peak;
       //Serial.print("Velocity piezo SWITCH : "); Serial.println(Send);
       //SendVelo = Piezo.peak;
+      /*
       if(memoNote == 0)
         piezoNote(_address.address);
       else
         piezoNote(memoNote);
+        */
+        //Serial.print("Memo note: "); Serial.println(memoNote);
+      piezoNote();
       Piezo.peak = 0;
       break;
     case FALLING:
@@ -81,9 +85,9 @@ void piezo::playnote(int piezoRead) {
   if (velocity > Piezo.peak) Piezo.peak = velocity;
 }
 
-void piezo::piezoNote(uint8_t note) {   
-  midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, note, Piezo.peak};
+void piezo::piezoNote() {   
+  midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, _address.address, Piezo.peak};
   MidiUSB.sendMIDI(noteOn);
-  midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, note, 0};
+  midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, _address.address, 0};
   MidiUSB.sendMIDI(noteOff);
 };

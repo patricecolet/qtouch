@@ -2,13 +2,14 @@
 
 //Use interrupt to optimize analogRead
 #include "Adafruit_ZeroTimer.h"
-int COMPARE = 48000/2;
+int COMPARE_P = 48000/2;
+int COMPARE_QT = 48000/4;
 
 //#include "piezo.h"
 #include "qtouch.h"
 #include "distance.h"
 #include "piezo.hpp"
-#include <FlashStorage.h>
+//#include <FlashStorage.h>
 
 //#include <Control_Surface.h>
 //USBMIDI_Interface midi;
@@ -64,25 +65,33 @@ uint8_t qtouchActif = 0;
 //int veloPiezo = 0;  // variable for the piezo's velocity 
 
 // timer to prioritize piezo
-Adafruit_ZeroTimer zerotimer = Adafruit_ZeroTimer(3);
+Adafruit_ZeroTimer zerotimerP = Adafruit_ZeroTimer(3);
 void TC3_Handler() {
   Adafruit_ZeroTimer::timerHandler(3);
 }
+/*
+// timer to priritize qtouch sensors
+Adafruit_ZeroTimer zerotimerQT = Adafruit_ZeroTimer(4);
+void TC4_Handler(){
+  Adafruit_ZeroTimer::timerHandler(4);
+}
+*/
 
 // distance sensor uses Adafruit_VL53L0X library
 distancePB Distance(0); // MIDI channel 1 is '0'
 long distanceTimer;
 
 // flash storage to stock the piezo's velocity
-FlashStorage(my_flash_store, int);
+//FlashStorage(my_flash_store, uint8_t);
 
 void setup() {
   distanceTimer = millis();
   Serial.begin(115200);
   qTouchBegin();
-  timerBegin();
+  timerPBegin();
+  //timerQTBegin();
   Distance.begin();
-  my_flash_store.write(qtouchActif);
+//  my_flash_store.write(qtouchActif);
 
 //   wait until serial port opens for native USB devices
 //    while (! Serial) {
@@ -96,15 +105,15 @@ void setup() {
 }
 
 void loop() {
-  qTouchLoop();
+ // qTouchLoop();
 //  if (tableauQtouch[0].getState() == 1) 
 //    Serial.println(tableauQtouch[0].getState());
-
+/*
   if (millis() - distanceTimer > 100) {
     distanceTimer = millis();
     Distance.update();
   }
-
+*/
   midiEventPacket_t midirx;
   // read the midi note
   midirx = MidiUSB.read();
@@ -137,38 +146,63 @@ void qTouchLoop() {
     tableauQtouch[i].loop(); 
     if (tableauQtouch[i].getState() == 1){
       note = 60+i;
-      my_flash_store.write(note);
+      //my_flash_store.write(note);
     }
     else
       Nqt = Nqt+1;
   }
-  if (Nqt == 7)
+  /*
+  if (Nqt == 7){
     note = 0;
     my_flash_store.write(note);
+  }
+  */
 }
 
-// the timer callback function
-void TimerCallback0(void){
+// Piezo's timer callback function
+void TimerCallback0(){
   //piezoread = analogRead(A3);
   //Serial.println(piezoread);
   //qTouchLoop();
+  /*
   qtouchActif = my_flash_store.read();
-  Serial.print("Note qtouch Actif : "); Serial.println(qtouchActif);
-  Piezo.update(qtouchActif);
+  if (qtouchActif != 255){
+    //Serial.print("Note qtouch Actif : "); Serial.println(qtouchActif);
+    Piezo.update(qtouchActif);
+  }    
+  */
+  Piezo.update();
 }
 
-void timerBegin(){ 
+
+// Piezo's timer setup
+void timerPBegin(){ 
   tc_clock_prescaler prescaler = TC_CLOCK_PRESCALER_DIV1;
-  zerotimer.enable(false);
-  zerotimer.configure(prescaler,       // prescaler
+  zerotimerP.enable(false);
+  zerotimerP.configure(prescaler,       // prescaler
           TC_COUNTER_SIZE_16BIT,       // bit width of timer/counter
           TC_WAVE_GENERATION_MATCH_PWM // frequency or PWM mode
           );
-  zerotimer.setCompare(0, COMPARE);
-  zerotimer.setCallback(true, TC_CALLBACK_CC_CHANNEL0, TimerCallback0);
-  zerotimer.enable(true);
+  zerotimerP.setCompare(0, COMPARE_P);
+  //zerotimerP.setCallback(true, TC_CALLBACK_CC_CHANNEL1, qTouchLoop);
+  zerotimerP.setCallback(true, TC_CALLBACK_CC_CHANNEL0, TimerCallback0);
+  zerotimerP.enable(true);
 }
 
+/*
+// qTouch's timer setup
+void timerQTBegin(){ 
+  tc_clock_prescaler prescaler = TC_CLOCK_PRESCALER_DIV1;
+  zerotimerQT.enable(false);
+  zerotimerQT.configure(prescaler,       // prescaler
+          TC_COUNTER_SIZE_16BIT,       // bit width of timer/counter
+          TC_WAVE_GENERATION_MATCH_PWM // frequency or PWM mode
+          );
+  zerotimerQT.setCompare(0, COMPARE_QT);
+  zerotimerQT.setCallback(true, TC_CALLBACK_CC_CHANNEL0, qTouchLoop);
+  zerotimerQT.enable(true);
+}
+*/
 void disableALL() {
   pinMode(0, OUTPUT);
   pinMode(1, OUTPUT);
