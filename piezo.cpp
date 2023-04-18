@@ -29,10 +29,10 @@ void piezo::update(uint8_t memoNote) {
         Piezo.state = PEAK;
       break;
     case PEAK:
-      if (Piezo.prevstate == PEAK)
-        Piezo.state = FALLING;      
-      //if (sendNote == 1)
-       // Piezo.state = SENDNOTE;
+      //if (Piezo.prevstate == PEAK)
+      //  Piezo.state = FALLING;      
+      if (sendNote == 1)
+        Piezo.state = SENDNOTE;
       break;
     case SENDNOTE:
       if (Piezo.prevstate == SENDNOTE)
@@ -61,31 +61,29 @@ void piezo::update(uint8_t memoNote) {
       playnote(piezoRead);
       break;
     case PEAK:
-      /*
       if(memoNote == 0)    
         recheckQt = 1;
       else
         sendNote = 1;
-      */
-      
+      /*
       if(memoNote == 0)
         piezoNote(_address.address);
       else
         piezoNote(memoNote);
-      
-      Serial.print("Memo note: "); Serial.println(memoNote);
+      */
+      //Serial.print("Memo note: "); Serial.println(memoNote);
       //piezoNote(48);
-      Piezo.peak = 0;
+      //Piezo.peak = 0;
       break;
     case SENDNOTE:
       if(memoNote == 0)
         piezoNote(_address.address);
       else
         piezoNote(memoNote);
-      //Serial.print("Memo note: "); Serial.println(memoNote);
-      //sendNote = 0;
-      //recheckQt = 0;
-      //Piezo.peak = 0;
+      Serial.print("Memo note: "); Serial.println(memoNote);
+      sendNote = 0;
+      recheckQt = 0;
+      Piezo.peak = 0;
       break;
     case FALLING:
       break;
@@ -103,11 +101,12 @@ void piezo::playnote(int piezoRead) {
   if (velocity > Piezo.peak) Piezo.peak = velocity;
 }
 
+// send note midi
 void piezo::piezoNote(uint8_t note) {  
-  if (note != 48){
+  //if (note != 48){
   midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, note, Piezo.peak};
   MidiUSB.sendMIDI(noteOn);
   midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, note, 0};
   MidiUSB.sendMIDI(noteOff);
-  }
+  //}
 };

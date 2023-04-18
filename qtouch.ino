@@ -2,7 +2,7 @@
 
 //Use interrupt to optimize analogRead
 #include "Adafruit_ZeroTimer.h"
-int COMPARE_P = 48000/2;
+int COMPARE_P = 48000;
 int COMPARE_QT = 48000/2;
 
 //#include "piezo.h"
@@ -104,8 +104,8 @@ void setup() {
 }
 
 void loop() {
-  //if (recheckQt == 0)
-  qTouchLoop();
+  if (recheckQt == 0)
+    qTouchLoop();
 //  if (tableauQtouch[0].getState() == 1) 
 //    Serial.println(tableauQtouch[0].getState());
 /*
@@ -166,12 +166,11 @@ void TimerCallback0(){
   //piezoread = analogRead(A3);
   //Serial.println(piezoread);
   //qTouchLoop();
-  /*
+  
   if (recheckQt == 1){
     qTouchLoop();
     sendNote = 1;
   }
-  */
   qtouchActif = my_flash_store.read();
   if (qtouchActif != 255){
     //Serial.print("Note qtouch Actif : "); Serial.println(qtouchActif);
