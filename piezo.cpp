@@ -1,6 +1,7 @@
 #include "piezo.hpp"
-//global variable for piezo's velocity
-//uint8_t velopiezo = 0;
+//global variable
+bool recheckQt = 0;
+bool sendNote = 0;
 
 piezo::piezo(pin_t pin, MIDIAddress address) {
      //zerotimer = Adafruit_ZeroTimer(timer);
@@ -8,7 +9,7 @@ piezo::piezo(pin_t pin, MIDIAddress address) {
     _pin = pin;  
     //SendVelo = 0;
 };
-void piezo::update() {
+void piezo::update(uint8_t memoNote) {
 //void piezo::update(uint8_t memoNote) {
   int piezoRead = analogRead(_pin);
   //int piezoRead = piezoread;
@@ -29,6 +30,12 @@ void piezo::update() {
       break;
     case PEAK:
       if (Piezo.prevstate == PEAK)
+        Piezo.state = FALLING;      
+      //if (sendNote == 1)
+       // Piezo.state = SENDNOTE;
+      break;
+    case SENDNOTE:
+      if (Piezo.prevstate == SENDNOTE)
         Piezo.state = FALLING;
       break;
     case FALLING:  
@@ -54,22 +61,33 @@ void piezo::update() {
       playnote(piezoRead);
       break;
     case PEAK:
-      //velopiezo = Piezo.peak;
-      //Serial.print("Velocity piezo SWITCH : "); Serial.println(Send);
-      //SendVelo = Piezo.peak;
       /*
+      if(memoNote == 0)    
+        recheckQt = 1;
+      else
+        sendNote = 1;
+      */
+      
       if(memoNote == 0)
         piezoNote(_address.address);
       else
         piezoNote(memoNote);
-        */
-        //Serial.print("Memo note: "); Serial.println(memoNote);
-      piezoNote();
+      
+      Serial.print("Memo note: "); Serial.println(memoNote);
+      //piezoNote(48);
       Piezo.peak = 0;
       break;
+    case SENDNOTE:
+      if(memoNote == 0)
+        piezoNote(_address.address);
+      else
+        piezoNote(memoNote);
+      //Serial.print("Memo note: "); Serial.println(memoNote);
+      //sendNote = 0;
+      //recheckQt = 0;
+      //Piezo.peak = 0;
+      break;
     case FALLING:
-      //velopiezo = 0;
-      //SendVelo = 0;
       break;
   }
   
@@ -85,9 +103,11 @@ void piezo::playnote(int piezoRead) {
   if (velocity > Piezo.peak) Piezo.peak = velocity;
 }
 
-void piezo::piezoNote() {   
-  midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, _address.address, Piezo.peak};
+void piezo::piezoNote(uint8_t note) {  
+  if (note != 48){
+  midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, note, Piezo.peak};
   MidiUSB.sendMIDI(noteOn);
-  midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, _address.address, 0};
+  midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, note, 0};
   MidiUSB.sendMIDI(noteOff);
+  }
 };

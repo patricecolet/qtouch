@@ -59,7 +59,7 @@ class NoteQtouch {
     void sendNoteOn(int);
     void sendNoteOff();
     void sendAfterTouch();
-    void loop();
+    void update();
     void begin();
     void calibrate();
     bool getState();
@@ -72,6 +72,7 @@ class NoteQtouch {
     void setState(bool);
     uint8_t velopiezo;
     MIDIAddress _address;
+    int _pin;
     int qt_floor, qt_memory;
     //Hysteresis <uint8_t> hysteresis;
 };

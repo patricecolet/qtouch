@@ -3,17 +3,20 @@
 //#define COMPARE 48000
 
 #include "MIDIUSB.h"
+#include "qtouch.h"
 #define UNDERTHRESHOLD 0
 #define SIGNAL 1
 #define RISING 2
 #define PEAK 3
-#define FALLING 4
+#define SENDNOTE 4
+#define FALLING 5
 #define pin_t int
 
 #include <iostream>
 using namespace std;
 
-//extern uint8_t velopiezo;
+extern bool recheckQt;
+extern bool sendNote;
 
 template<typename T> 
 struct piezoState 
@@ -26,10 +29,10 @@ struct piezoState
 	T peak;
 	piezoState()
 	{
-		threshold = 35;
+		threshold = 50;
     state = UNDERTHRESHOLD;
     prevstate = UNDERTHRESHOLD;
-		debounceTime = 25;
+		debounceTime = 50;
 		sensitivity = 1023;
 		peak = 0;
 	}
@@ -42,8 +45,8 @@ class piezo {
 			uint8_t channel : 4;
 		};
 		piezo(pin_t, MIDIAddress);
-		void update();
-		void piezoNote();
+		void update(uint8_t);
+		void piezoNote(uint8_t);
     void playnote(int);
 	private:
     //Adafruit_ZeroTimer zerotimer;
