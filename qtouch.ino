@@ -89,7 +89,7 @@ void setup() {
   qTouchBegin();
   timerPBegin();
   //timerQTBegin();
-  //Distance.begin();
+  Distance.begin();
   my_flash_store.write(qtouchActif);
 
 //   wait until serial port opens for native USB devices
@@ -108,12 +108,12 @@ void loop() {
     qTouchLoop();
 //  if (tableauQtouch[0].getState() == 1) 
 //    Serial.println(tableauQtouch[0].getState());
-/*
+
   if (millis() - distanceTimer > 100) {
     distanceTimer = millis();
     Distance.update();
   }
-*/
+
   midiEventPacket_t midirx;
   // read the midi note
   midirx = MidiUSB.read();
