@@ -166,7 +166,6 @@ void TimerCallback0(){
   //piezoread = analogRead(A3);
   //Serial.println(piezoread);
   //qTouchLoop();
-  
   if (recheckQt == 1){
     qTouchLoop();
     sendNote = 1;
