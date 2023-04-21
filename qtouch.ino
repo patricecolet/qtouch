@@ -82,7 +82,6 @@ void setup() {
   Serial.begin(115200);
   qTouchBegin();
   timerPBegin();
-  //timerQTBegin();
   Distance.begin();
   //my_flash_store.write(qtouchActif);
 
@@ -119,6 +118,7 @@ void loop() {
   if (midinote == 0x3c) {
     Serial.println("calibrate");
     qTouchBegin();
+    Distance.begin();
   }
  // delay(20);
 }

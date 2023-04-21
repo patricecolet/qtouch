@@ -13,7 +13,7 @@ class distancePB {
     byte _channel;
     bool Detect;
     bool prevDetect;
-    uint16_t pitchbend;
+    uint16_t distanceRead;
     uint16_t ControllerValue;
     VL53L0X_RangingMeasurementData_t measure;
     bool inRange;
