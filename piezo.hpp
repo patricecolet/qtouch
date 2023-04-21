@@ -17,6 +17,7 @@ using namespace std;
 
 extern bool recheckQt;
 extern bool sendNote;
+extern bool DoneSendNote[];
 
 template<typename T> 
 struct piezoState 
@@ -32,7 +33,7 @@ struct piezoState
 		threshold = 50;
     state = UNDERTHRESHOLD;
     prevstate = UNDERTHRESHOLD;
-		debounceTime = 50;
+		debounceTime = 30;
 		sensitivity = 1023;
 		peak = 0;
 	}
@@ -49,7 +50,6 @@ class piezo {
 		void piezoNote(uint8_t);
     void playnote(int);
 	private:
-    //Adafruit_ZeroTimer zerotimer;
 		MIDIAddress _address;
     uint8_t velocity;
     pin_t _pin;

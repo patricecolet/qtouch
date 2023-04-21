@@ -63,7 +63,7 @@ class NoteQtouch {
     void begin();
     void calibrate();
     bool getState();
-    //void setVelocity(int);
+    bool IgnoreNote;
   private:   
     Adafruit_FreeTouch qt;
     uint8_t note;

@@ -2,19 +2,14 @@
 //global variable
 bool recheckQt = 0;
 bool sendNote = 0;
+bool DoneSendNote[7] = {0,0,0,0,0,0,0};
 
 piezo::piezo(pin_t pin, MIDIAddress address) {
-     //zerotimer = Adafruit_ZeroTimer(timer);
     _address = address;
     _pin = pin;  
-    //SendVelo = 0;
 };
 void piezo::update(uint8_t memoNote) {
-//void piezo::update(uint8_t memoNote) {
   int piezoRead = analogRead(_pin);
-  //int piezoRead = piezoread;
-  //Serial.print("TIMER: "); Serial.println(piezoRead);
-  // switch case to update piezo.state
   switch(Piezo.state) {
     case UNDERTHRESHOLD:
       if(piezoRead > Piezo.threshold && piezoRead > prevpiezoRead)
@@ -28,9 +23,7 @@ void piezo::update(uint8_t memoNote) {
       if (piezoRead < prevpiezoRead)
         Piezo.state = PEAK;
       break;
-    case PEAK:
-      //if (Piezo.prevstate == PEAK)
-      //  Piezo.state = FALLING;      
+    case PEAK:     
       if (sendNote == 1)
         Piezo.state = SENDNOTE;
       break;
@@ -43,11 +36,6 @@ void piezo::update(uint8_t memoNote) {
         Piezo.state = UNDERTHRESHOLD;
       break;
   }
-//  Serial.println("\n*************************************");
-//  Serial.print("PIEZO: "); Serial.println(piezoRead);
-//  Serial.print("PREVIOUS PIEZO: "); Serial.println(prevpiezoRead);
-//  Serial.print("PIEZO STATE: "); Serial.println(Piezo.state);
-// delay(1);
 
   // switch case for actions in each piezo.state 
   switch(Piezo.state) {
@@ -65,21 +53,15 @@ void piezo::update(uint8_t memoNote) {
         recheckQt = 1;
       else
         sendNote = 1;
-      /*
-      if(memoNote == 0)
-        piezoNote(_address.address);
-      else
-        piezoNote(memoNote);
-      */
-      //Serial.print("Memo note: "); Serial.println(memoNote);
-      //piezoNote(48);
-      //Piezo.peak = 0;
       break;
     case SENDNOTE:
       if(memoNote == 0)
         piezoNote(_address.address);
-      else
+      else{
         piezoNote(memoNote);
+        DoneSendNote[memoNote - 60] = 1;
+        //Serial.print("Done Send note: ");Serial.print(memoNote - 60); Serial.println(DoneSendNote[memoNote - 60]);
+      }
       Serial.print("Memo note: "); Serial.println(memoNote);
       sendNote = 0;
       recheckQt = 0;
@@ -92,7 +74,6 @@ void piezo::update(uint8_t memoNote) {
   // save prevoius values in memory variables
   prevpiezoRead = piezoRead;
   Piezo.prevstate = Piezo.state;
-  //return SendVelo;
 }
 
 void piezo::playnote(int piezoRead) {
@@ -101,12 +82,12 @@ void piezo::playnote(int piezoRead) {
   if (velocity > Piezo.peak) Piezo.peak = velocity;
 }
 
-// send note midi
+// Send note midi
 void piezo::piezoNote(uint8_t note) {  
-  //if (note != 48){
+  if (note != 48){
   midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, note, Piezo.peak};
   MidiUSB.sendMIDI(noteOn);
   midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, note, 0};
   MidiUSB.sendMIDI(noteOff);
-  //}
+  }
 };
