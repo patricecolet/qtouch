@@ -84,7 +84,7 @@ void setup() {
   timerPBegin();
   //timerQTBegin();
   Distance.begin();
-  my_flash_store.write(qtouchActif);
+  //my_flash_store.write(qtouchActif);
 
 //   wait until serial port opens for native USB devices
 //    while (! Serial) {

@@ -7,11 +7,14 @@ class distancePB {
     distancePB(byte);
     bool begin();
     void update();
-    void sendPitchbend();
+    void sendController();
 //  private:
     Adafruit_VL53L0X distance;
     byte _channel;
+    bool Detect;
+    bool prevDetect;
     uint16_t pitchbend;
+    uint16_t ControllerValue;
     VL53L0X_RangingMeasurementData_t measure;
     bool inRange;
 };
