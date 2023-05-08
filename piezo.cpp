@@ -1,8 +1,5 @@
 #include "piezo.hpp"
-//global variable
-bool recheckQt = 0;
 bool sendNote = 0;
-bool DoneSendNote[7] = {0,0,0,0,0,0,0};
 
 piezo::piezo(pin_t pin, MIDIAddress address) {
     _address = address;
@@ -49,31 +46,20 @@ void piezo::update(uint8_t memoNote) {
       playnote(piezoRead);
       break;
     case PEAK:
-      if(memoNote == 0)    
-        recheckQt = 1;
-      else
         sendNote = 1;
       break;
     case SENDNOTE:
-      if(memoNote == 0)
-        piezoNote(_address.address);
-      else{
-        piezoNote(memoNote);
-        DoneSendNote[memoNote - 60] = 1;
-        //Serial.print("Done Send note: ");Serial.print(memoNote - 60); Serial.println(DoneSendNote[memoNote - 60]);
-      }
-      Serial.print("Memo note: "); Serial.println(memoNote);
+      if(memoNote == 0) piezoNote(_address.address);
+      else piezoNote(memoNote);
       sendNote = 0;
-      recheckQt = 0;
       Piezo.peak = 0;
       break;
     case FALLING:
       break;
   }
-  
-  // save prevoius values in memory variables
   prevpiezoRead = piezoRead;
   Piezo.prevstate = Piezo.state;
+  state = Piezo.state;
 }
 
 void piezo::playnote(int piezoRead) {
@@ -84,10 +70,18 @@ void piezo::playnote(int piezoRead) {
 
 // Send note midi
 void piezo::piezoNote(uint8_t note) {  
-  if (note != 48){
+//  if (note != 48){
   midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, note, Piezo.peak};
   MidiUSB.sendMIDI(noteOn);
   midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, note, 0};
   MidiUSB.sendMIDI(noteOff);
-  }
+//  }
+};
+void piezo::noteOff(uint8_t note) {  
+//  if (note != 48){
+  // midiEventPacket_t noteOn = {0x09, 0x90 | _address.channel, note, Piezo.peak};
+  // MidiUSB.sendMIDI(noteOn);
+  midiEventPacket_t noteOff = {0x08, 0x80 | _address.channel, note, 0};
+  MidiUSB.sendMIDI(noteOff);
+//  }
 };

@@ -1,3 +1,5 @@
+#include <CircularBuffer.h>
+
 // This code works only on SAMD21
 
 //Use interrupt to optimize analogRead
@@ -5,11 +7,9 @@
 int COMPARE_P = 48000;
 int COMPARE_QT = 48000/2;
 
-//#include "piezo.h"
 #include "qtouch.h"
 #include "distance.h"
 #include "piezo.hpp"
-#include <FlashStorage.h>
 
 //#include <Control_Surface.h>
 //USBMIDI_Interface midi;
@@ -26,31 +26,31 @@ int COMPARE_QT = 48000/2;
 NoteQtouch tableauQtouch[] = {
   NoteQtouch {
     QT1,            // QT1 is also pin A0 of SAMD21
-    {60, 0 }     // Note Number 60 on MIDI channel 1
-  },
-  NoteQtouch {
-    QT2,            // QT2 is also pin A1 of SAMD21
-    {61, 0 }     // Note Number 60 on MIDI channel 1
-  },
-  NoteQtouch {
-    QT3,            // QT3 is also pin A6 of SAMD21
     {62, 0 }     // Note Number 60 on MIDI channel 1
   },
   NoteQtouch {
-    QT4,            // QT4 is also pin A7 of SAMD21
-    {63, 0 }     // Note Number 60 on MIDI channel 1
-  },
-  NoteQtouch {
-    QT5,            // QT5 is also pin A8 of SAMD21
+    QT2,            // QT2 is also pin A1 of SAMD21
     {64, 0 }     // Note Number 60 on MIDI channel 1
   },
   NoteQtouch {
-    QT6,            // QT6 is also pin A9 of SAMD21
+    QT3,            // QT3 is also pin A6 of SAMD21
     {65, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT4,            // QT4 is also pin A7 of SAMD21
+    {69, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT5,            // QT5 is also pin A8 of SAMD21
+    {67, 0 }     // Note Number 60 on MIDI channel 1
+  },
+  NoteQtouch {
+    QT6,            // QT6 is also pin A9 of SAMD21
+    {60, 0 }     // Note Number 60 on MIDI channel 1
   },
   NoteQtouch{
     QT7,            // QT7 is also pin A10 of SAMD21
-    {66, 0 }     // Note Number 60 on MIDI channel 1
+    {71, 0 }     // Note Number 60 on MIDI channel 1
   }
 };
 
@@ -70,41 +70,68 @@ void TC3_Handler() {
 }
 
 // distance sensor uses Adafruit_VL53L0X library
-distancePB Distance(0); // MIDI channel 1 is '0'
+distancePB Distance(0); // filter amount
 long distanceTimer;
+long bufferTimer;
 
 // flash storage to stock the activated qtouch zone
-FlashStorage(my_flash_store, uint8_t);
-bool Tab_state[7] = {0,0,0,0,0,0,0};
-
+//FlashStorage(my_flash_store, uint8_t);
+//bool Tab_state[7] = {0,0,0,0,0,0,0};
+CircularBuffer<uint8_t, 7> QTbuffer;
+CircularBuffer<uint8_t, 7> tempBuffer;
 void setup() {
   distanceTimer = millis();
   Serial.begin(115200);
   qTouchBegin();
   timerPBegin();
-  Distance.begin();
-  //my_flash_store.write(qtouchActif);
+//  Distance.begin();
 
-//   wait until serial port opens for native USB devices
-//    while (! Serial) {
-//      delay(1);
-//    }
-//    if (!Distance.begin()) {
-//      Serial.println(F("Failed to boot VL53L0X"));
-//      while(1);
-//    }
+  // wait until serial port opens for native USB devices
+  //  while (! Serial) {
+  //    delay(1);
+  //  }
+  //  if (!Distance.begin()) {
+  //    Serial.println(F("Failed to boot VL53L0X"));
+  //    while(1);
+  //  }
 //pinMode(buttonPin, INPUT);
 }
 
+void printQTbuffer() {
+	if (QTbuffer.isEmpty()) {
+		Serial.println("empty");
+	} else {
+		Serial.print("[");
+		for (decltype(QTbuffer)::index_t i = 0; i < QTbuffer.size() - 1; i++) {
+			Serial.print(QTbuffer[i]);
+			Serial.print(",");
+		}
+		Serial.print(QTbuffer[QTbuffer.size() - 1]);
+		Serial.print("] (");
+
+		Serial.print(QTbuffer.size());
+		Serial.print("/");
+		Serial.print(QTbuffer.size() + QTbuffer.available());
+		if (QTbuffer.isFull()) {
+			Serial.print(" full");
+		}
+
+		Serial.println(")");
+	}
+}
+
 void loop() {
-  if (recheckQt == 0)
     qTouchLoop();
 
-  if (millis() - distanceTimer > 100) {
-    distanceTimer = millis();
-    Distance.update();
-  }
-
+//  if ((millis() - distanceTimer > 100) && Piezo.state == 0) {
+  // if ((millis() - distanceTimer > 100)) {
+  //   distanceTimer = millis();
+  //   Distance.update();
+  // }
+  // if (millis() - bufferTimer > 1000) {
+  //   bufferTimer = millis();
+  //   printQTbuffer();
+  // }
   midiEventPacket_t midirx;
   // read the midi note
   midirx = MidiUSB.read();
@@ -117,8 +144,10 @@ void loop() {
   // if (buttonState == LOW || (midinote == 0x3c)) {
   if (midinote == 0x3c) {
     Serial.println("calibrate");
-    qTouchBegin();
-    Distance.begin();
+  for (int i = 0; i < 7; i ++){
+  tableauQtouch[i].calibrate();   
+  }
+//    Distance.begin();
   }
  // delay(20);
 }
@@ -130,46 +159,81 @@ void qTouchBegin() {
   tableauQtouch[i].begin();   
   }
 }
+int bufferSearch(uint8_t note) {
+  for (int i = 0; i < 7; i ++) {
+    int buff = QTbuffer[i];
+    if (QTbuffer[i] == note) return i;
+  }
+  return -1;
+}
+void removeFromBuffer(uint8_t pos) {
 
+  Serial.print("removing ");Serial.println(QTbuffer[pos]);
+  for (uint8_t i = 0; i > QTbuffer.size() ; i ++) {
+    if (i != pos) tempBuffer.unshift(QTbuffer.pop());
+  }
+  QTbuffer.clear();
+  for (uint8_t i = 0; i > tempBuffer.size() ; i ++) {
+    QTbuffer.unshift(tempBuffer.pop());
+  }
+}
 void qTouchLoop() {
-  for (int i = 0; i < 7; i ++){
+  for (uint8_t i = 0; i < 7; i ++){
     tableauQtouch[i].update(); 
-    if (tableauQtouch[i].getState() == 1){
-      Tab_state[i] = 1;
-      //Serial.print("Ignore Note QT ");Serial.print(i); Serial.print(" : ");Serial.println(tableauQtouch[i].IgnoreNote);
+    uint8_t note = tableauQtouch[i].note;
+    if (tableauQtouch[i].getState() == 1) {
+      int pos = bufferSearch(note);
+
+//      Serial.print("pos ");Serial.println(pos);
+      if (pos < 0) {
+        QTbuffer.push(note);
+//      Serial.print("Buffer Push ");Serial.println(note);
+      }
     }
-    else
-      Tab_state[i] = 0;
-    //Serial.print("Ignore Note QT ");Serial.print(i); Serial.print(" : ");Serial.println(tableauQtouch[i].IgnoreNote);
+    else {
+      if (QTbuffer.isEmpty()) {
+// sometimes buffer is empty before sending note off??
+      }
+      else if (bufferSearch(note) >= 0) {
+        removeFromBuffer(note);
+        tableauQtouch[i].sendAfterTouch(0);
+//        Piezo.noteOff(note);
+      }
+    }
   }
 }
 
 // Piezo's timer callback function
+
 void TimerCallback0(){
-  int Nqt = 0;  // number of non-actif qtouch zones
-  if (recheckQt == 1){
-    qTouchLoop();
-    sendNote = 1;
-  }
-  for (int i = 0; i < 7; i ++){
-    if (Tab_state[i] == 1 && tableauQtouch[i].IgnoreNote == 0){
-      Piezo.update((uint8_t)(60+i));
-        if(DoneSendNote[i] == 1){
+//    qTouchLoop(); 
+  // if (millis() - distanceTimer > 100) {
+  //   distanceTimer = millis();
+  //   Distance.update();
+  // } 
+  	if (QTbuffer.isEmpty()) {
+      
+//		      Piezo.update((uint8_t)(0));
+	} else {
+      Piezo.update((uint8_t)(QTbuffer.last()));
+        // if(DoneSendNote[i] == 1){
           //midiEventPacket_t event = {0x09, 0x90 | 0, 60+i, 65};
           //MidiUSB.sendMIDI(event);
-          tableauQtouch[i].IgnoreNote = 1;
-          DoneSendNote[i] = 0;
-        }
+          // tableauQtouch[i].IgnoreNote = 1;
+          // DoneSendNote[i] = 0;
+//        }
     }
-    else
-      Nqt = Nqt+1;
-  }
-  if (Nqt == 7){
-      Piezo.update((uint8_t)(0));
-  }
+    // else
+    //   Nqt = Nqt+1;
+ // }
+  // if (Nqt == 7){
+  //     Piezo.update((uint8_t)(0));
+  // }
+
 }
 
-// Piezo's timer setup
+// timer setup
+
 void timerPBegin(){ 
   tc_clock_prescaler prescaler = TC_CLOCK_PRESCALER_DIV1;
   zerotimerP.enable(false);

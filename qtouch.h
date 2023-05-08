@@ -58,15 +58,14 @@ class NoteQtouch {
 	  NoteQtouch(int, MIDIAddress);
     void sendNoteOn(int);
     void sendNoteOff();
-    void sendAfterTouch();
+    void sendAfterTouch(uint8_t);
     void update();
     void begin();
     void calibrate();
     bool getState();
-    bool IgnoreNote;
+    uint8_t note;
   private:   
     Adafruit_FreeTouch qt;
-    uint8_t note;
     uint8_t velocity;
     bool state;
     void setState(bool);
@@ -74,7 +73,6 @@ class NoteQtouch {
     MIDIAddress _address;
     int _pin;
     int qt_floor, qt_memory;
-    //Hysteresis <uint8_t> hysteresis;
 };
 
 

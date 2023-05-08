@@ -33,7 +33,7 @@ struct piezoState
 		threshold = 50;
     state = UNDERTHRESHOLD;
     prevstate = UNDERTHRESHOLD;
-		debounceTime = 30;
+		debounceTime = 50;
 		sensitivity = 1023;
 		peak = 0;
 	}
@@ -48,7 +48,9 @@ class piezo {
 		piezo(pin_t, MIDIAddress);
 		void update(uint8_t);
 		void piezoNote(uint8_t);
+		void noteOff(uint8_t);
     void playnote(int);
+    int state;
 	private:
 		MIDIAddress _address;
     uint8_t velocity;

@@ -20,7 +20,7 @@ void CCQtouch::loop() {
   //int qt_measure = (( N * qt_measure ) + qt.measure() ) / ( N + 1 );
   int qt_measure = qt.measure();
   // set roundoff at instantiation
-  int roundOff = 5;
+  int roundOff = 10;
   int range = 1014 - qt_floor + roundOff;
   CCvalue = 127 * (qt_measure - qt_floor + roundOff) / range;
   if(qt_measure > qt_floor + roundOff) {
@@ -36,18 +36,17 @@ void CCQtouch::sendController() {
 NoteQtouch::NoteQtouch(int pin, MIDIAddress address) {
   qt = Adafruit_FreeTouch(pin, OVERSAMPLE_64, RESISTOR_50K, FREQ_MODE_HOP);
   _address = address;
-  _pin = pin; 
+  _pin = pin;
+  note = address.address;
   //Hysteresis <uint8_t> hysteresis(10);
 };
 
 void NoteQtouch::begin() {
   qt.begin();
-  qt_floor = qt.measure();
-//  hysteresis.set(10);
-  //calibrate();
+  qt_floor = 900;
 };
 
-void NoteQtouch::calibrate(){
+void NoteQtouch::calibrate() {
   qt_floor = qt.measure();
 };
 
@@ -61,18 +60,21 @@ void NoteQtouch::update() {
     qt_memory = qt_measure;
     //sendNoteOn();
     Serial.print("Note On"); Serial.println(_pin);
-    IgnoreNote = 0;
+//    IgnoreNote = 0;
     setState(1);
   };
-  if((qt_measure < (qt_floor + roundOff)) && qt_memory != 0) {
+//  if((qt_measure < (qt_floor + roundOff)) && qt_memory != 0) qt_memory = 0;
+  if((qt_measure < (qt_floor + roundOff))) {
     qt_memory = 0;    
     //sendNoteOff();  
     setState(0);
-    sendAfterTouch();
+//    sendAfterTouch();
   }
   if((qt_memory > 0) && (qt_memory != qt_measure)) {
-      qt_memory = qt_measure;     
-      sendAfterTouch();
+      qt_memory = qt_measure;
+      uint8_t afterTouch = velocity * 3;
+      if (afterTouch > 127) afterTouch = 127;     
+      sendAfterTouch(afterTouch);
     }
 };
 
@@ -97,9 +99,7 @@ void NoteQtouch::sendNoteOff() {
       MidiUSB.sendMIDI(event);
 };
 
-void NoteQtouch::sendAfterTouch() {
-      uint8_t afterTouch = velocity * 3;
-      if (afterTouch > 127) afterTouch = 127;
+void NoteQtouch::sendAfterTouch(uint8_t afterTouch) {
       midiEventPacket_t event = {0x0A, 0xA0 | _address.channel, _address.address, afterTouch};
       MidiUSB.sendMIDI(event);
 };
