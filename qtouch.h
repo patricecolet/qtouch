@@ -2,7 +2,7 @@
 #define Qtouch_hpp
 #include "Arduino.h"
 #include "Adafruit_FreeTouch.h"
-#include "Hysteresis.h"
+//#include "Hysteresis.h"
 #include "MIDIUSB.h"
 
 #define QT1 A0
@@ -56,22 +56,23 @@ class NoteQtouch {
       uint8_t channel : 4;
     };   
 	  NoteQtouch(int, MIDIAddress);
-    void sendNoteOn();
+    void sendNoteOn(int);
     void sendNoteOff();
-    void sendAfterTouch();
-    void loop();
+    void sendAfterTouch(uint8_t);
+    void update();
     void begin();
     void calibrate();
     bool getState();
+    uint8_t note;
   private:   
     Adafruit_FreeTouch qt;
-    uint8_t note;
     uint8_t velocity;
     bool state;
     void setState(bool);
+    uint8_t velopiezo;
     MIDIAddress _address;
+    int _pin;
     int qt_floor, qt_memory;
-    Hysteresis <uint8_t> hysteresis;
 };
 
 
