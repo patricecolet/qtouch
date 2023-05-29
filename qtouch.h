@@ -56,7 +56,7 @@ class NoteQtouch {
       uint8_t channel : 4;
     };   
 	  NoteQtouch(int, MIDIAddress);
-    void sendNoteOn(int);
+    void sendNoteOn(uint8_t);
     void sendNoteOff();
     void sendAfterTouch(uint8_t);
     void update();

@@ -30,10 +30,10 @@ struct piezoState
 	T peak;
 	piezoState()
 	{
-		threshold = 50;
+		threshold = 17;
     state = UNDERTHRESHOLD;
     prevstate = UNDERTHRESHOLD;
-		debounceTime = 50;
+		debounceTime = 20;
 		sensitivity = 1023;
 		peak = 0;
 	}

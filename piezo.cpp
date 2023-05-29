@@ -7,6 +7,8 @@ piezo::piezo(pin_t pin, MIDIAddress address) {
 };
 void piezo::update(uint8_t memoNote) {
   int piezoRead = analogRead(_pin);
+//  Serial.println(piezoRead);
+//  delay(20);
   switch(Piezo.state) {
     case UNDERTHRESHOLD:
       if(piezoRead > Piezo.threshold && piezoRead > prevpiezoRead)
