@@ -23,7 +23,7 @@ void initPiezo() {
   piezo.threshold = 10;     // noise threshold amount
   piezo.state = UNDERTHRESHOLD;
   piezo.prevstate = UNDERTHRESHOLD;
-  piezo.debounceTime = 10;  // time between rising and falling state
+  piezo.debounceTime = 20;  // time between rising and falling state
   piezo.sensitivity = 1023;  // Maximum input range
   piezo.peak = 0;
   piezo.note = 48;          //MIDI note on

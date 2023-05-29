@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "distance.h"
-#define HIGHEST_RANGE_MM 800
-#define LOWEST_RANGE_MM 10
+#define HIGHEST_RANGE_MM 400
+#define LOWEST_RANGE_MM 100
 #define CONTROLER_LSB 46
 #define CONTROLER_MSB 14
 
@@ -12,43 +12,48 @@ distancePB::distancePB(byte channel) : filter(filterAmount) {
 
 bool distancePB::begin() {
   
-  Serial.println("Adafruit begin");
+  Serial.println("VL53L0X begin");
   if(!distance.begin()) {
   Serial.println("begin failed");
     return 0;
   }
   else {
       Serial.println("begin succeed");
-    return 1;
-  }
+  
+  distance.startRangeContinuous();
   ControllerValue = 16383;
   sendController();
+  return 1;
+  }
 };
 
 void distancePB::update() {
 //  distance.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
-  distanceRead = measure.RangeMilliMeter;
+  distanceRead = distance.readRange();
+
+//      Serial.println(distanceRead);
   if (measure.RangeStatus != 4) {
-    if ( measure.RangeMilliMeter >= LOWEST_RANGE_MM && measure.RangeMilliMeter <= HIGHEST_RANGE_MM)
+    if ( distanceRead >= LOWEST_RANGE_MM && distanceRead <= HIGHEST_RANGE_MM) {
       Detect = 1;
+    }
     else{
       Detect = 0;
-      //Serial.println("NOT IN RANGE");
+//      Serial.println("NOT IN RANGE");
     }
   }
   else
       Detect = 0;
   if (Detect == 1){
-//    double filteredDistance = filter.addSample((double)(distanceRead));
-    ControllerValue = 16383 - 16383 * (HIGHEST_RANGE_MM - distanceRead) / HIGHEST_RANGE_MM;
+    double filteredDistance = filter.addSample((double)(distanceRead));
+    ControllerValue = 16383 * (filteredDistance - LOWEST_RANGE_MM) / (HIGHEST_RANGE_MM - LOWEST_RANGE_MM);
     if (ControllerValue < 0)
-      ControllerValue = 16383;
+      ControllerValue = 0;
   sendController();
   }
-  else if (prevDetect == 1 && Detect == 0) {
-    ControllerValue = 16383;
-      sendController();
-  }
+  // else if (prevDetect == 1 && Detect == 0) {
+  //   ControllerValue = 16383;
+  //     sendController();
+  // }
 
   prevDetect = Detect;
 };

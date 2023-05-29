@@ -20,7 +20,7 @@ void CCQtouch::loop() {
   //int qt_measure = (( N * qt_measure ) + qt.measure() ) / ( N + 1 );
   int qt_measure = qt.measure();
   // set roundoff at instantiation
-  int roundOff = 10;
+  int roundOff = 25;
   int range = 1014 - qt_floor + roundOff;
   CCvalue = 127 * (qt_measure - qt_floor + roundOff) / range;
   if(qt_measure > qt_floor + roundOff) {
@@ -43,7 +43,7 @@ NoteQtouch::NoteQtouch(int pin, MIDIAddress address) {
 
 void NoteQtouch::begin() {
   qt.begin();
-  qt_floor = 900;
+  qt_floor = qt.measure();
 };
 
 void NoteQtouch::calibrate() {
@@ -53,18 +53,18 @@ void NoteQtouch::calibrate() {
 void NoteQtouch::update() {
   //int qt_measure = (( N * qt_measure ) + qt.measure() ) / ( N + 1 );
   int qt_measure = qt.measure();
-  int roundOff = 15;
+  int roundOff = 10;
   int range = 1014 - qt_floor + roundOff;
   velocity = 127 * (qt_measure - qt_floor + roundOff) / range;
   if((qt_measure > qt_floor + roundOff) && qt_memory == 0) {
     qt_memory = qt_measure;
     //sendNoteOn();
-    Serial.print("Note On"); Serial.println(_pin);
+//    Serial.print("Note On"); Serial.println(_pin);
 //    IgnoreNote = 0;
     setState(1);
   };
 //  if((qt_measure < (qt_floor + roundOff)) && qt_memory != 0) qt_memory = 0;
-  if((qt_measure < (qt_floor + roundOff))) {
+  if((qt_measure < (qt_floor + roundOff)) && qt_memory != 0) {
     qt_memory = 0;    
     //sendNoteOff();  
     setState(0);
@@ -72,7 +72,7 @@ void NoteQtouch::update() {
   }
   if((qt_memory > 0) && (qt_memory != qt_measure)) {
       qt_memory = qt_measure;
-      uint8_t afterTouch = velocity * 3;
+      uint8_t afterTouch = velocity * 2;
       if (afterTouch > 127) afterTouch = 127;     
       sendAfterTouch(afterTouch);
     }
@@ -87,10 +87,9 @@ bool NoteQtouch::getState() {
 };
 
 
-void NoteQtouch::sendNoteOn(int velo) {
-      velopiezo = (uint8_t)(velo);
+void NoteQtouch::sendNoteOn(uint8_t velo) {
       //midiEventPacket_t event = {0x09, 0x90 | _address.channel, _address.address, velocity};
-      midiEventPacket_t event = {0x09, 0x90 | _address.channel, _address.address, velopiezo};
+      midiEventPacket_t event = {0x09, 0x90 | _address.channel, _address.address, velo};
       MidiUSB.sendMIDI(event);
 };
 
