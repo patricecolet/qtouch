@@ -7,8 +7,14 @@
 int COMPARE_P = 48000;
 int COMPARE_QT = 48000/2;
 
+/*
 #include "distance.h"
 const byte VL53LOX_ShutdownPin = 2;
+// distance sensor uses Adafruit_VL53L0X library
+distancePB Distance(5); // filter amount
+long distanceTimer;
+long bufferTimer;
+*/
 
 #include "qtouch.h"
 NoteQtouch tableauQtouch[] = {
@@ -80,18 +86,15 @@ void qTouchBegin() {
   }
 }
 
-// distance sensor uses Adafruit_VL53L0X library
-distancePB Distance(5); // filter amount
-long distanceTimer;
-long bufferTimer;
 
 
 void setup() {
-  distanceTimer = millis();
   Serial.begin(115200);
 
   Serial.println(F("HEXAPAD SETUP"));
   delay(1000);
+/*
+  distanceTimer = millis();
   pinMode(VL53LOX_ShutdownPin, OUTPUT);
   if (!Distance.begin()) {
     Serial.println(F("Failed to boot VL53L0X"));
@@ -103,6 +106,7 @@ void setup() {
     delay(100);
   }
   digitalWrite(VL53LOX_ShutdownPin, LOW);
+  */
   qTouchBegin();
   delay(1000);
     for (int i = 0; i < 7; i ++){
@@ -146,13 +150,15 @@ void calibrate() {
 
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
   // if (buttonState == LOW || (midinote == 0x3c)) {
+
+//calibrate on note off
   if (midinote == 0x3c && midivelocity == 0) {
     Serial.println("calibrate");
   for (int i = 0; i < 7; i ++){
 //  tableauQtouch[i].begin(); 
   tableauQtouch[i].calibrate();   
   }
-    Distance.begin();
+//    Distance.begin();
   }
 }
 
